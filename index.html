@@ -20,7 +20,7 @@ body{background:#050506;color:#fff;min-height:100vh}
 header{padding:25px 20px 16px;text-align:center}
 .heart{width:72px;height:72px;border-radius:50%;background:#29292f;margin:auto;display:flex;align-items:center;justify-content:center;font-size:32px}
 header h1{font-size:27px;margin-top:13px} header p{color:#a7a7af;font-size:14px;margin-top:6px}
-main{padding-bottom:95px}.hero{margin:10px 18px 22px;padding:24px 18px;text-align:center;border:1px solid #303037;border-radius:24px;background:linear-gradient(135deg,#29292f,#17171b)}
+main{padding-bottom:95px}.hero{margin:10px 18px 22px;padding:24px 18px;text-align:center;border:1px solid #303037;border-radius:24px;background:linear-gradient(135deg,#29292f,#17171b)}.couple-photo-wrap{width:132px;height:132px;margin:0 auto 16px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.18);background:#222;box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative}.couple-photo{width:100%;height:100%;object-fit:cover;display:none}.couple-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:54px}.field-label{display:block;font-size:13px;color:#aaa;margin:10px 0 6px;text-align:left}.couple-photo-preview{min-height:80px;margin:8px 0 10px;border:1px dashed #3a3a42;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#777;overflow:hidden}.couple-photo-preview img{width:100%;max-height:180px;object-fit:cover;display:block}
 .label{color:#aaa;font-size:13px}.counter{font-size:37px;font-weight:800;margin-top:7px}.counter small{font-size:14px;color:#aaa;font-weight:400}.date{color:#aaa;font-size:13px;margin-top:8px}
 .section-title{font-size:18px;padding:0 20px 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 18px}
 .card{min-height:125px;padding:18px;border-radius:20px;background:#19191e;border:1px solid #2b2b32;cursor:pointer;transition:.2s}.card:hover{transform:translateY(-2px);background:#222228}.icon{font-size:27px;margin-bottom:14px}.card h3{font-size:15px;margin-bottom:5px}.card p{font-size:12px;line-height:1.4;color:#9999a2}
@@ -121,6 +121,7 @@ body.chat-open .bottom-nav{display:none}
 @keyframes wave{to{transform:scaleY(.45);opacity:.55}}
 .chat-preview{padding:7px 10px!important;margin-bottom:7px;border:1px solid #303039;border-radius:13px!important;background:#101015!important;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .chat-preview .btn{padding:5px 9px;font-size:11px;margin:0}
+.preview-actions{display:flex;gap:6px;flex:0 0 auto}.audio-preview-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.audio-preview-area .voice-wave{min-width:75px}.preview-wave i{height:7px!important}.preview-wave i:nth-child(2){height:16px!important}.preview-wave i:nth-child(3){height:11px!important}.preview-wave i:nth-child(4){height:20px!important}.preview-wave i:nth-child(5){height:9px!important}.preview-wave i:nth-child(6){height:15px!important}.preview-wave i:nth-child(7){height:21px!important}.preview-wave i:nth-child(8){height:12px!important}.preview-wave i:nth-child(9){height:18px!important}.preview-wave i:nth-child(10){height:8px!important}.record-finish{flex:0 0 auto!important;padding:6px 9px!important}.chat-recording.paused .record-dot{animation:none;opacity:.5}.chat-recording.paused .record-wave i{animation-play-state:paused}
 .chat-img-media{width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:5px;cursor:pointer;border:1px solid rgba(255,255,255,.08)}
 .voice-player{display:flex;align-items:center;gap:9px;min-width:190px;padding:2px 0}
 .voice-play{width:38px;height:38px;border-radius:50%;border:0;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex:0 0 38px}
@@ -180,6 +181,7 @@ body.chat-open .bottom-nav{display:none}
 <main>
 <section id="home" class="page active">
   <div class="hero">
+    <div class="couple-photo-wrap"><img id="couplePhoto" class="couple-photo" src="" alt="Foto do casal"><div id="couplePhotoPlaceholder" class="couple-photo-placeholder">💑</div></div>
     <div class="label" id="coupleNames">Nosso amor</div>
     <div class="counter" id="counter">— <small>dias juntos</small></div>
     <div class="date" id="relationshipDate"></div>
@@ -217,12 +219,21 @@ body.chat-open .bottom-nav{display:none}
     <div class="chat-composer-wrap">
       <div id="chatRecording" class="chat-recording">
         <span class="record-dot"></span><span id="recordTime" class="record-time">0:00</span>
-        <span class="record-label">Gravando áudio</span>
+        <span id="recordLabel" class="record-label">Gravando áudio</span>
         <span class="record-wave"><i></i><i></i><i></i><i></i><i></i></span>
+        <button type="button" class="btn secondary record-finish" onclick="finishAudioRecording()">✓ Pronto</button>
       </div>
       <div id="chatPreview" class="chat-preview hidden">
+        <div id="audioPreviewArea" class="audio-preview-area hidden">
+          <button type="button" id="previewPlayBtn" class="voice-play" onclick="togglePreviewAudio()">▶</button>
+          <div class="voice-wave preview-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <span id="previewDuration" class="voice-duration">0:00</span>
+        </div>
         <span id="previewText" style="font-size:12px;color:#aaa;flex:1"></span>
-        <button type="button" onclick="cancelMediaUpload()" class="btn danger">Cancelar</button>
+        <div class="preview-actions">
+          <button type="button" onclick="cancelMediaUpload()" class="btn danger">✕</button>
+          <button type="button" id="sendPreviewBtn" onclick="sendSelectedMedia()" class="btn">➤</button>
+        </div>
       </div>
       <form id="chatForm" class="chat-form">
         <label for="chatImageInput" class="btn secondary chat-btn-action" title="Anexar foto" aria-label="Anexar foto">📷</label>
@@ -335,6 +346,10 @@ body.chat-open .bottom-nav{display:none}
     <input id="setTitle" placeholder="Nome do aplicativo">
     <input id="setSubtitle" placeholder="Frase abaixo do título">
     <input id="setNames" placeholder="Nome do casal">
+    <label class="field-label" for="couplePhotoFile">📷 Foto do casal</label>
+    <input id="couplePhotoFile" type="file" accept="image/*" onchange="previewCouplePhoto(event)">
+    <div id="couplePhotoPreview" class="couple-photo-preview"></div>
+    <button type="button" class="btn secondary full" onclick="removeCouplePhoto()">🗑️ Remover foto</button>
     <input id="setDate" type="date">
     <textarea id="setMessage" placeholder="Recadinho da página inicial"></textarea>
     <button class="btn full" onclick="saveCouple()">Salvar personalização</button>
@@ -504,7 +519,7 @@ body.chat-open .bottom-nav{display:none}
   let mediaType = null;
 
   const defaults = {
-    couple:{title:'Nosso Cantinho',subtitle:'Um espaço só nosso.',names:'Nosso amor',date:'',message:'Personalize este espaço em Configurações.'},
+    couple:{title:'Nosso Cantinho',subtitle:'Um espaço só nosso.',names:'Nosso amor',date:'',message:'Personalize este espaço em Configurações.',photo:''},
     history:[],photos:[],dates:[],plans:[],wishes:[],today:[],challenges:[],
     moods:[{emoji:'😊',label:'Muito bem'},{emoji:'🙂',label:'Bem'},{emoji:'😐',label:'Normal'},{emoji:'🥺',label:'Com saudade'},{emoji:'❤️',label:'Precisando de carinho'}],
     letters:[],mural:[],quiz:[],checkins:[]
@@ -606,119 +621,49 @@ body.chat-open .bottom-nav{display:none}
   };
 
   let recordingStartedAt = 0;
+  let recordingElapsedBeforePause = 0;
   let recordingTimer = null;
+  let previewAudio = null;
+  let recordingMimeType = '';
+  let recordingExt = 'webm';
 
   function getAudioMime() {
-    const options = [
-      'audio/mp4;codecs=mp4a.40.2',
-      'audio/mp4',
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/ogg;codecs=opus'
-    ];
-    if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
-      return options.find(type => MediaRecorder.isTypeSupported(type)) || '';
-    }
-    return '';
+    const options=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];
+    return window.MediaRecorder?.isTypeSupported ? (options.find(t=>MediaRecorder.isTypeSupported(t)) || '') : '';
   }
-
-  function formatRecordTime(ms) {
-    const total = Math.floor(ms / 1000);
-    return Math.floor(total / 60) + ':' + String(total % 60).padStart(2, '0');
-  }
-
-  function stopRecordingUI() {
-    const micBtn = document.getElementById('micBtn');
-    const recordingBox = document.getElementById('chatRecording');
-    micBtn?.classList.remove('recording');
-    if (micBtn) micBtn.textContent = '🎙️';
-    recordingBox?.classList.remove('active');
-    if (recordingTimer) clearInterval(recordingTimer);
-    recordingTimer = null;
-  }
-
-  window.toggleAudioRecording = async function() {
-    const micBtn = document.getElementById('micBtn');
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      toast('Seu navegador não permite gravar áudio. Abra o site pelo Chrome/Safari atualizado.');
-      return;
-    }
-
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
-      const mimeType = getAudioMime();
-      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-      audioChunks = [];
-      recordingStartedAt = Date.now();
-      const recordingBox = document.getElementById('chatRecording');
-      const recordTime = document.getElementById('recordTime');
-      recordingBox?.classList.add('active');
-      micBtn?.classList.add('recording');
-      if (micBtn) micBtn.textContent = '■';
-      recordTime.textContent = '0:00';
-      recordingTimer = setInterval(() => { recordTime.textContent = formatRecordTime(Date.now() - recordingStartedAt); }, 250);
-
-      mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-      mediaRecorder.onerror = (e) => {
-        console.error('MediaRecorder error:', e.error || e);
-        stream.getTracks().forEach(t => t.stop());
-        stopRecordingUI();
-        toast('Erro ao gravar o áudio.');
+  function formatRecordTime(ms){const total=Math.floor(ms/1000);return Math.floor(total/60)+':'+String(total%60).padStart(2,'0');}
+  function stopRecordingTimer(){if(recordingTimer)clearInterval(recordingTimer);recordingTimer=null;}
+  function updateRecordingTimer(){const e=document.getElementById('recordTime');if(e)e.textContent=formatRecordTime(recordingElapsedBeforePause+(Date.now()-recordingStartedAt));}
+  function startRecordingTimer(){stopRecordingTimer();recordingStartedAt=Date.now();recordingTimer=setInterval(updateRecordingTimer,250);}
+  function stopRecordingUI(){const b=document.getElementById('micBtn'),r=document.getElementById('chatRecording');b?.classList.remove('recording');if(b)b.textContent='🎙️';r?.classList.remove('active','paused');stopRecordingTimer();}
+  function resetAudioPreview(){if(previewAudio){previewAudio.pause();if(previewAudio.src?.startsWith('blob:'))URL.revokeObjectURL(previewAudio.src);previewAudio.src='';}previewAudio=null;document.getElementById('audioPreviewArea')?.classList.add('hidden');const b=document.getElementById('previewPlayBtn');if(b)b.textContent='▶';}
+  window.togglePreviewAudio=function(){if(!previewAudio)return;if(previewAudio.paused){previewAudio.play().then(()=>document.getElementById('previewPlayBtn').textContent='❚❚').catch(()=>toast('Não foi possível reproduzir o áudio.'));}else{previewAudio.pause();document.getElementById('previewPlayBtn').textContent='▶';}};
+  window.finishAudioRecording=function(){if(!mediaRecorder||!['recording','paused'].includes(mediaRecorder.state))return;stopRecordingTimer();if(mediaRecorder.state==='paused')mediaRecorder.resume();mediaRecorder.stop();};
+  window.toggleAudioRecording=async function(){
+    const mic=document.getElementById('micBtn'),box=document.getElementById('chatRecording'),label=document.getElementById('recordLabel'),time=document.getElementById('recordTime');
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast('Seu navegador não permite gravar áudio.');return;}
+    if(mediaRecorder?.state==='recording'){mediaRecorder.pause();recordingElapsedBeforePause+=Date.now()-recordingStartedAt;stopRecordingTimer();box?.classList.add('paused');if(label)label.textContent='Áudio pausado';if(mic){mic.textContent='▶';mic.classList.remove('recording');}return;}
+    if(mediaRecorder?.state==='paused'){mediaRecorder.resume();box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();return;}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      recordingMimeType=getAudioMime();mediaRecorder=recordingMimeType?new MediaRecorder(stream,{mimeType:recordingMimeType}):new MediaRecorder(stream);recordingMimeType=mediaRecorder.mimeType||recordingMimeType||'audio/webm';recordingExt=recordingMimeType.includes('mp4')?'m4a':recordingMimeType.includes('ogg')?'ogg':'webm';audioChunks=[];recordingElapsedBeforePause=0;
+      box?.classList.add('active');box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(time)time.textContent='0:00';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();
+      mediaRecorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data);};
+      mediaRecorder.onerror=e=>{console.error(e);stream.getTracks().forEach(t=>t.stop());mediaRecorder=null;stopRecordingUI();toast('Erro ao gravar o áudio.');};
+      mediaRecorder.onstop=()=>{
+        stream.getTracks().forEach(t=>t.stop());const type=mediaRecorder?.mimeType||recordingMimeType||'audio/webm';const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';const blob=new Blob(audioChunks,{type});mediaRecorder=null;audioChunks=[];stopRecordingUI();
+        if(!blob.size){toast('Não foi possível criar o áudio.');return;}
+        selectedFile=blob;mediaType='audio';recordingMimeType=type;recordingExt=ext;resetAudioPreview();previewAudio=new Audio(URL.createObjectURL(blob));previewAudio.preload='metadata';previewAudio.onloadedmetadata=()=>{const d=isFinite(previewAudio.duration)?previewAudio.duration:0;document.getElementById('previewDuration').textContent=formatAudioDuration(d);};previewAudio.onended=()=>document.getElementById('previewPlayBtn').textContent='▶';
+        document.getElementById('audioPreviewArea').classList.remove('hidden');document.getElementById('previewText').textContent='🎙️ Áudio pronto. Ouça antes de enviar.';document.getElementById('chatPreview').classList.remove('hidden');
       };
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        stopRecordingUI();
-        const actualType = mediaRecorder.mimeType || mimeType || 'audio/webm';
-        const ext = actualType.includes('mp4') ? 'm4a' : actualType.includes('ogg') ? 'ogg' : 'webm';
-        const audioBlob = new Blob(audioChunks, { type: actualType });
-        mediaRecorder = null;
-        audioChunks = [];
-        if (!audioBlob.size) { toast('Não foi possível criar o áudio.'); return; }
-        await sendAudioBlob(audioBlob, actualType, ext);
-      };
-
       mediaRecorder.start(250);
-    } catch (err) {
-      console.error('Microfone:', err);
-      stopRecordingUI();
-      const msg = err?.name === 'NotAllowedError' ? 'Permita o microfone no navegador para gravar.' : 'Não foi possível acessar o microfone.';
-      toast(msg);
-    }
+    }catch(err){console.error(err);stopRecordingUI();toast(err?.name==='NotAllowedError'?'Permita o microfone no navegador.':'Não foi possível acessar o microfone.');}
   };
-
-  async function sendAudioBlob(audioBlob, contentType, ext) {
-    const user = auth.currentUser;
-    if (!user) { toast('Faça login novamente para enviar áudio.'); return; }
-    try {
-      toast('Enviando áudio...');
-      const path = `chat_media/${Date.now()}_${user.uid}.${ext}`;
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, audioBlob, { contentType, cacheControl: 'public,max-age=31536000' });
-      const mediaUrl = await getDownloadURL(storageRef);
-      await addDoc(collection(db, 'mensagens'), {
-        texto: '', mediaUrl, mediaType: 'audio',
-        mediaContentType: contentType,
-        remetenteId: user.uid, remetenteNome: user.displayName || 'Amor',
-        data: serverTimestamp()
-      });
-      toast('Áudio enviado!');
-    } catch (err) {
-      console.error('Erro ao enviar áudio:', err);
-      toast('Não foi possível enviar o áudio.');
-    }
-  }
-
-  window.cancelMediaUpload = function() {
-    selectedFile = null;
-    mediaType = null;
-    document.getElementById('chatImageInput').value = '';
-    document.getElementById('chatPreview').classList.add('hidden');
+  window.sendSelectedMedia=async function(){
+    if(!selectedFile)return;const user=auth.currentUser;if(!user){toast('Faça login novamente.');return;}const btn=document.getElementById('sendPreviewBtn');
+    try{if(btn){btn.disabled=true;btn.textContent='…';}toast('Enviando áudio...');const type=recordingMimeType||selectedFile.type||'audio/webm';const ext=recordingExt||'webm';const path=`chat_media/${Date.now()}_${user.uid}.${ext}`;const sr=ref(storage,path);await uploadBytes(sr,selectedFile,{contentType:type,cacheControl:'public,max-age=31536000'});const url=await getDownloadURL(sr);await addDoc(collection(db,'mensagens'),{texto:'',mediaUrl:url,mediaType:'audio',mediaContentType:type,remetenteId:user.uid,remetenteNome:user.displayName||'Amor',data:serverTimestamp()});cancelMediaUpload();toast('Áudio enviado!');}catch(err){console.error('Erro ao enviar áudio:',err);if(btn){btn.disabled=false;btn.textContent='➤';}toast('Não foi possível enviar o áudio.');}
   };
+  window.cancelMediaUpload=function(){resetAudioPreview();selectedFile=null;mediaType=null;recordingMimeType='';recordingExt='webm';const i=document.getElementById('chatImageInput');if(i)i.value='';document.getElementById('chatPreview')?.classList.add('hidden');document.getElementById('previewText').textContent='';};
 
   let activeChatAudio = null;
   let activeChatVoice = null;
@@ -822,29 +767,10 @@ body.chat-open .bottom-nav{display:none}
 
   document.getElementById("chatForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const input = document.getElementById('chatInput');
-    const texto = input.value.trim();
-    const user = auth.currentUser;
-    if (!user) { toast('Faça login novamente.'); return; }
-    if (!texto && !selectedFile) return;
-    let mediaUrl = '';
-    try {
-      if (selectedFile) {
-        toast('Enviando mídia...');
-        const isAudio = mediaType === 'audio';
-        const contentType = selectedFile.type || (isAudio ? 'audio/webm' : 'image/jpeg');
-        const ext = isAudio ? (contentType.includes('mp4') ? 'm4a' : contentType.includes('ogg') ? 'ogg' : 'webm') : (selectedFile.name?.split('.').pop() || 'jpg');
-        const path = `chat_media/${Date.now()}_${user.uid}.${ext}`;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, selectedFile, { contentType });
-        mediaUrl = await getDownloadURL(storageRef);
-      }
-      await addDoc(collection(db, 'mensagens'), { texto, mediaUrl, mediaType: mediaType || '', remetenteId:user.uid, remetenteNome:user.displayName || 'Amor', data:serverTimestamp() });
-      input.value=''; cancelMediaUpload();
-    } catch(err) {
-      console.error('Erro ao enviar mensagem:',err);
-      toast('Erro ao enviar. Verifique a internet e o Firebase Storage.');
-    }
+    if(selectedFile && mediaType==='audio'){await sendSelectedMedia();return;}
+    const input=document.getElementById("chatInput"),texto=input.value.trim(),user=auth.currentUser;
+    if(!texto&&!selectedFile)return;
+    try{let mediaUrl="";if(selectedFile){toast("Enviando mídia...");const sr=ref(storage,`chat_media/${Date.now()}_${selectedFile.name}`);await uploadBytes(sr,selectedFile);mediaUrl=await getDownloadURL(sr);}await addDoc(collection(db,"mensagens"),{texto,mediaUrl,mediaType,remetenteId:user?.uid||"anonimo",remetenteNome:user?.displayName||"Anônimo",data:serverTimestamp()});input.value="";cancelMediaUpload();}catch(err){console.error(err);toast("Erro ao enviar mensagem.");}
   });
 
   window.editChatMessage = async function(msgId, currentText) {
@@ -942,6 +868,12 @@ body.chat-open .bottom-nav{display:none}
     document.getElementById('coupleNames').textContent = window.data.couple.names;
     document.getElementById('homeMessage').textContent = window.data.couple.message;
     document.getElementById('relationshipDate').textContent = window.data.couple.date ? ('Desde ' + fmtDate(window.data.couple.date)) : '';
+    const cp = document.getElementById('couplePhoto');
+    const ph = document.getElementById('couplePhotoPlaceholder');
+    if (cp && ph) {
+      if (window.data.couple.photo) { cp.src = window.data.couple.photo; cp.style.display = 'block'; ph.style.display = 'none'; }
+      else { cp.removeAttribute('src'); cp.style.display = 'none'; ph.style.display = 'flex'; }
+    }
     const days = daysTogether();
     document.getElementById('counter').innerHTML = days === null ? '— <small>dias juntos</small>' : days + ' <small>dias juntos</small>';
   }
@@ -1068,6 +1000,35 @@ body.chat-open .bottom-nav{display:none}
     toast(i === c ? 'Acertou! ❤️' : 'Quase! 😘');
     window.quizIndex++;
     setTimeout(renderQuiz, 500);
+  };
+
+  window.previewCouplePhoto = function(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem.'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('A foto deve ter no máximo 5 MB.'); event.target.value=''; return; }
+    const r = new FileReader();
+    r.onload = () => {
+      window.data.couple.photo = r.result;
+      renderCouplePhotoPreview();
+      renderHome();
+    };
+    r.readAsDataURL(file);
+  };
+
+  function renderCouplePhotoPreview() {
+    const box = document.getElementById('couplePhotoPreview');
+    if (!box) return;
+    box.innerHTML = window.data.couple.photo ? `<img src="${esc(window.data.couple.photo)}" alt="Prévia da foto do casal">` : '<span>Nenhuma foto escolhida</span>';
+  }
+
+  window.removeCouplePhoto = function() {
+    window.data.couple.photo = '';
+    const input = document.getElementById('couplePhotoFile');
+    if (input) input.value = '';
+    renderCouplePhotoPreview();
+    renderHome();
+    toast('Foto removida. Clique em salvar para confirmar.');
   };
 
   window.saveCouple = function() {
@@ -1211,6 +1172,9 @@ body.chat-open .bottom-nav{display:none}
     document.getElementById('setSubtitle').value = window.data.couple.subtitle;
     document.getElementById('setNames').value = window.data.couple.names;
     document.getElementById('setDate').value = window.data.couple.date;
+    const input = document.getElementById('couplePhotoFile');
+    if (input) input.value = '';
+    renderCouplePhotoPreview();
     document.getElementById('setMessage').value = window.data.couple.message;
   }
 
