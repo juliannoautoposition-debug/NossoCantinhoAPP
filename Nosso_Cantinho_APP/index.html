@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#09090b">
+
+<!-- Meta Tags para PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nosso Cantinho">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
+
+<title>Nosso Cantinho ❤️</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#050506;color:#fff;min-height:100vh}
+.app{max-width:480px;margin:auto;min-height:100vh;background:linear-gradient(180deg,#18181d,#0c0c0f);position:relative;overflow:hidden}
+header{padding:25px 20px 16px;text-align:center}
+.heart{width:72px;height:72px;border-radius:50%;background:#29292f;margin:auto;display:flex;align-items:center;justify-content:center;font-size:32px}
+header h1{font-size:27px;margin-top:13px} header p{color:#a7a7af;font-size:14px;margin-top:6px}
+main{padding-bottom:95px}.hero{margin:10px 18px 22px;padding:24px 18px;text-align:center;border:1px solid #303037;border-radius:24px;background:linear-gradient(135deg,#29292f,#17171b)}.couple-photo-wrap{width:132px;height:132px;margin:0 auto 16px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,.18);background:#222;box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative}.couple-photo{width:100%;height:100%;object-fit:cover;display:none}.couple-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:54px}.field-label{display:block;font-size:13px;color:#aaa;margin:10px 0 6px;text-align:left}.couple-photo-preview{min-height:80px;margin:8px 0 10px;border:1px dashed #3a3a42;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#777;overflow:hidden}.couple-photo-preview img{width:100%;max-height:180px;object-fit:cover;display:block}.notification-box{margin-top:14px;padding:14px;border:1px solid #303039;border-radius:14px;background:#101015}.notification-box .btn{margin-top:10px}
+.label{color:#aaa;font-size:13px}.counter{font-size:37px;font-weight:800;margin-top:7px}.counter small{font-size:14px;color:#aaa;font-weight:400}.date{color:#aaa;font-size:13px;margin-top:8px}
+.section-title{font-size:18px;padding:0 20px 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 18px}
+.card{min-height:125px;padding:18px;border-radius:20px;background:#19191e;border:1px solid #2b2b32;cursor:pointer;transition:.2s}.card:hover{transform:translateY(-2px);background:#222228}.icon{font-size:27px;margin-bottom:14px}.card h3{font-size:15px;margin-bottom:5px}.card p{font-size:12px;line-height:1.4;color:#9999a2}
+.message{margin:22px 18px;padding:20px;border:1px solid #292930;border-radius:20px;background:#19191e}.message-title{font-size:13px;color:#aaa;margin-bottom:9px}.message p{font-size:15px;line-height:1.55}
+.bottom-nav{position:fixed;bottom:0;width:100%;max-width:480px;height:74px;display:flex;justify-content:space-around;align-items:center;background:rgba(18,18,22,.97);backdrop-filter:blur(15px);border-top:1px solid #292930;z-index:20}
+.nav-item{color:#85858e;font-size:11px;text-align:center;cursor:pointer}.nav-item.active{color:#fff}.nav-icon{font-size:21px;margin-bottom:4px}
+.page{display:none;padding:4px 18px 100px}.page.active{display:block}.page-head{display:flex;align-items:center;gap:12px;margin:10px 0 20px}.back{border:0;background:#25252b;color:#fff;border-radius:12px;width:40px;height:40px;font-size:20px;cursor:pointer}.page-head h2{font-size:21px}
+.panel{background:#19191e;border:1px solid #2b2b32;border-radius:20px;padding:18px;margin-bottom:14px}
+input,textarea,select{width:100%;background:#101014;color:#fff;border:1px solid #34343c;border-radius:12px;padding:12px;margin:7px 0;font-size:14px;outline:none}textarea{min-height:95px;resize:vertical}
+.btn{border:0;border-radius:12px;background:#fff;color:#111;padding:12px 16px;font-weight:700;cursor:pointer;margin-top:5px}.btn.secondary{background:#29292f;color:#fff}.btn.danger{background:#3a2023;color:#ffb5bd}.btn.full{width:100%}
+.row{display:flex;gap:8px}.row>*{flex:1}.small{font-size:12px;color:#999;margin-top:7px}.muted{color:#999;font-size:13px;line-height:1.5}.empty{text-align:center;color:#999;padding:30px 10px}
+.item{padding:14px 0;border-bottom:1px solid #2b2b31}.item:last-child{border-bottom:0}.item-title{font-weight:800}.item-meta{font-size:12px;color:#999;margin-top:5px}.item-actions{display:flex;gap:7px;margin-top:10px}.item-actions button{font-size:12px;padding:8px 10px}
+.tag{display:inline-block;background:#29292f;border:1px solid #383840;border-radius:999px;padding:4px 8px;font-size:11px;margin:2px;color:#ddd}
+.timeline{border-left:2px solid #555;padding-left:18px}.event{position:relative;margin-bottom:20px}.event:before{content:"";position:absolute;left:-25px;top:3px;width:10px;height:10px;border-radius:50%;background:#fff}.event h3{font-size:15px}.event p{font-size:13px;color:#aaa;margin-top:5px;line-height:1.5}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.photo{min-height:145px;border-radius:16px;background:#151519;border:1px solid #303037;padding:12px;overflow:hidden}.photo img{width:100%;height:115px;object-fit:cover;border-radius:12px}.photo .caption{font-size:12px;color:#aaa;margin-top:7px}
+.today-panel{text-align:center;padding:24px 18px}.today-icon{font-size:42px;margin-bottom:10px}.today-panel h3{font-size:20px}.today-btn{width:100%;margin-top:16px;font-size:15px}.today-result{margin-top:18px;min-height:100px;border:1px dashed #45454e;border-radius:18px;background:#101014;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center}.result-emoji{font-size:34px;margin-bottom:7px}.result-text{font-size:18px;font-weight:800}
+.mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mood-btn{background:#101014;color:#fff;border:1px solid #34343c;border-radius:16px;padding:15px 10px;cursor:pointer;text-align:center}.mood-btn.selected{border-color:#fff;background:#29292f}.mood-emoji{font-size:25px}.mood-label{font-size:12px;color:#aaa;margin-top:6px}
+.desire{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-bottom:1px solid #2b2b31}.desire:last-child{border-bottom:0}.desire-main{flex:1}.desire-title{font-weight:700}.stars{letter-spacing:2px;font-size:12px}.check{width:19px;height:19px;margin:2px 0}.heart-btn{background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
+.settings-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.settings-nav button{background:#202026;color:#aaa;border:1px solid #303038;border-radius:12px;padding:10px;cursor:pointer;font-size:12px}.settings-nav button.active{background:#fff;color:#111}
+.settings-section{display:none}.settings-section.active{display:block}.settings-section h3{font-size:16px;margin-bottom:8px}
+.divider{height:1px;background:#2b2b31;margin:15px 0}.notice{background:#202026;border:1px solid #33333b;border-radius:14px;padding:12px;font-size:12px;color:#aaa;line-height:1.5}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:11px 16px;border-radius:12px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.quick-edit{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.quick-edit button{font-size:11px;padding:7px 9px}.hidden{display:none!important}
+
+/* CHAT — visual inspirado em WhatsApp/TikTok */
+#chat.page.active{
+  position:fixed;
+  inset:0;
+  width:min(100vw,480px);
+  height:100dvh;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:35;
+  padding:0;
+  background:#0b0b0f;
+  overflow:hidden;
+}
+#chat.page.active ~ *{}
+body.chat-open{overflow:hidden}
+body.chat-open #topHeader{display:none}
+body.chat-open .bottom-nav{display:none}
+.chat-container{
+  height:100%; width:100%; max-height:none;
+  display:flex; flex-direction:column;
+  background:#0b0b0f;
+  border:0; border-radius:0; overflow:hidden;
+  box-shadow:none;
+}
+.chat-topbar{
+  flex:0 0 auto; height:64px; display:flex; align-items:center; gap:10px;
+  padding:8px 12px; background:#15151a; border-bottom:1px solid #292930;
+  box-shadow:0 2px 12px rgba(0,0,0,.28); z-index:3;
+}
+.chat-topbar .back{width:42px;height:42px;border-radius:50%;background:#25252b;font-size:27px;line-height:1}
+.chat-top-info{min-width:0;display:flex;flex-direction:column;gap:2px}
+.chat-top-title{font-size:16px;font-weight:800;color:#fff}
+.chat-top-status{font-size:11px;color:#8f8f99}
+.chat-messages{
+  flex:1; min-height:0; padding:14px 11px 12px;
+  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  display:flex; flex-direction:column; gap:7px; scroll-behavior:smooth;
+  background:radial-gradient(circle at 50% -10%,#1a1a20 0,#0b0b0f 48%);
+}
+.chat-date-divider{
+  align-self:center; background:#202027; color:#a6a6af; font-size:10px; font-weight:700;
+  padding:5px 11px; border-radius:999px; margin:9px 0; border:1px solid #303039;
+  box-shadow:0 2px 8px rgba(0,0,0,.2)
+}
+.chat-msg{
+  max-width:82%; padding:8px 10px 6px; border-radius:16px; font-size:14px; line-height:1.42;
+  word-break:break-word; position:relative; box-shadow:0 1px 2px rgba(0,0,0,.24)
+}
+.chat-msg.mine{align-self:flex-end;background:#25252d;color:#fff;border-bottom-right-radius:5px;border:1px solid #353541}
+.chat-msg.other{align-self:flex-start;background:#17171d;color:#eee;border-bottom-left-radius:5px;border:1px solid #292930}
+.chat-msg-sender{font-size:10px;font-weight:800;color:#b1b1ba;margin-bottom:3px}
+.chat-msg-time{font-size:9px;color:#85858e;text-align:right;margin-top:3px}
+.msg-actions{display:flex;gap:8px;font-size:9px;margin-top:2px;color:#a9a9b1;justify-content:flex-end}
+.msg-actions span{cursor:pointer;opacity:.72;text-decoration:none}
+.chat-composer-wrap{flex:0 0 auto;background:#15151a;border-top:1px solid #292930;padding:7px 8px max(8px,env(safe-area-inset-bottom));z-index:4}
+.chat-form{display:flex;gap:6px;align-items:flex-end;padding:0;background:transparent;border:0}
+.chat-form input[type="text"]{margin:0;min-width:0;height:42px;border-radius:22px;background:#0f0f14;padding:10px 14px;flex:1;border-color:#303039}
+.chat-btn-action{border-radius:50%;width:42px;height:42px;padding:0;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 42px;cursor:pointer;border:0;margin:0;transition:transform .15s,background .15s}
+.chat-btn-action:active{transform:scale(.92)}
+.chat-send-btn{background:#fff;color:#111}
+.chat-mic-btn{background:#292930;color:#fff;position:relative;overflow:visible}
+.chat-mic-btn.recording{background:#b32635;animation:micPulse 1.1s infinite;box-shadow:0 0 0 0 rgba(179,38,53,.55)}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(179,38,53,.5)}70%{box-shadow:0 0 0 11px rgba(179,38,53,0)}100%{box-shadow:0 0 0 0 rgba(179,38,53,0)}}
+.chat-recording{display:none;align-items:center;gap:10px;margin-bottom:7px;padding:8px 12px;border:1px solid #34343d;border-radius:16px;background:#101015}
+.chat-recording.active{display:flex}
+.record-dot{width:9px;height:9px;border-radius:50%;background:#ff3b4e;animation:recordBlink 1s infinite}
+@keyframes recordBlink{50%{opacity:.25}}
+.record-time{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;min-width:40px}
+.record-label{font-size:12px;color:#aaa;flex:1}
+.record-wave{display:flex;gap:2px;align-items:center;height:20px}
+.record-wave i{display:block;width:3px;border-radius:4px;background:#ddd;animation:wave 650ms ease-in-out infinite alternate}
+.record-wave i:nth-child(1){height:7px}.record-wave i:nth-child(2){height:14px;animation-delay:-.2s}.record-wave i:nth-child(3){height:19px;animation-delay:-.4s}.record-wave i:nth-child(4){height:11px;animation-delay:-.1s}.record-wave i:nth-child(5){height:16px;animation-delay:-.3s}
+@keyframes wave{to{transform:scaleY(.45);opacity:.55}}
+.chat-preview{padding:7px 10px!important;margin-bottom:7px;border:1px solid #303039;border-radius:13px!important;background:#101015!important;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.chat-preview .btn{padding:5px 9px;font-size:11px;margin:0}
+.preview-actions{display:flex;gap:6px;flex:0 0 auto}.audio-preview-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.audio-preview-area .voice-wave{min-width:75px}.preview-wave i{height:7px!important}.preview-wave i:nth-child(2){height:16px!important}.preview-wave i:nth-child(3){height:11px!important}.preview-wave i:nth-child(4){height:20px!important}.preview-wave i:nth-child(5){height:9px!important}.preview-wave i:nth-child(6){height:15px!important}.preview-wave i:nth-child(7){height:21px!important}.preview-wave i:nth-child(8){height:12px!important}.preview-wave i:nth-child(9){height:18px!important}.preview-wave i:nth-child(10){height:8px!important}.record-finish{flex:0 0 auto!important;padding:6px 9px!important}.chat-recording.paused .record-dot{animation:none;opacity:.5}.chat-recording.paused .record-wave i{animation-play-state:paused}
+.chat-img-media{width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:5px;cursor:pointer;border:1px solid rgba(255,255,255,.08)}
+.voice-player{display:flex;align-items:center;gap:9px;min-width:190px;padding:2px 0}
+.voice-play{width:38px;height:38px;border-radius:50%;border:0;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex:0 0 38px}
+.voice-wave{height:30px;display:flex;align-items:center;gap:2px;flex:1;overflow:hidden}
+.voice-wave i{width:3px;border-radius:3px;background:#888;display:block;min-height:5px;max-height:23px;opacity:.8}
+.voice-player.playing .voice-wave i{animation:voiceBars .72s ease-in-out infinite alternate}
+.voice-player.playing .voice-wave i:nth-child(2n){animation-delay:-.25s}.voice-player.playing .voice-wave i:nth-child(3n){animation-delay:-.48s}
+@keyframes voiceBars{to{transform:scaleY(.35)}}
+.voice-duration{font-size:10px;color:#999;min-width:31px;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:480px){.chat-msg{max-width:86%}.chat-messages{padding-left:8px;padding-right:8px}}
+
+/* Lightbox */
+.photo img{cursor:zoom-in;transition:transform .2s}
+.photo img:hover{transform:scale(1.02)}
+.photo-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:25px}
+.photo-lightbox.active{display:flex}
+.photo-lightbox img{max-width:94vw;max-height:82vh;object-fit:contain;border-radius:12px;box-shadow:0 10px 50px rgba(0,0,0,.55)}
+.photo-lightbox .lb-close,.photo-lightbox .lb-prev,.photo-lightbox .lb-next{
+  position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border-radius:50%;
+  width:44px;height:44px;font-size:25px;backdrop-filter:blur(8px)
+}
+.photo-lightbox .lb-close{top:18px;right:18px}
+.photo-lightbox .lb-prev{left:18px;top:50%;transform:translateY(-50%)}
+.photo-lightbox .lb-next{right:18px;top:50%;transform:translateY(-50%)}
+.photo-lightbox .lb-caption{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);max-width:85vw;text-align:center;color:#fff;font-size:14px}
+.photo-lightbox .lb-counter{position:absolute;top:22px;left:50%;transform:translateX(-50%);color:#aaa;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LOGIN OVERLAY -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:#09090b;z-index:999;padding:30px 20px;display:flex;flex-direction:column;justify-content:center;max-width:480px;margin:auto;">
+  <div class="heart" style="margin-bottom:20px;">❤️</div>
+  <h2 style="text-align:center;margin-bottom:8px;" id="authTitle">Entrar no Cantinho</h2>
+  <p style="text-align:center;color:#aaa;font-size:14px;margin-bottom:24px;">Acesse com sua conta do casal</p>
+  
+  <form id="authForm" novalidate>
+    <div class="panel">
+      <input type="text" id="authName" placeholder="Seu nome (ex: Juliano ou Lara)" style="display:none;">
+      <input type="email" id="authEmail" placeholder="E-mail" required>
+      <input type="password" id="authPassword" placeholder="Senha" required>
+      
+      <button type="button" class="btn full" id="authSubmitBtn">Entrar</button>
+      <button type="button" class="btn secondary full" id="authToggleBtn" onclick="toggleAuthMode()" style="margin-top:10px;">Não tem conta? Cadastrar</button>
+    </div>
+  </form>
+</div>
+
+<header id="topHeader">
+  <div class="heart">❤️</div>
+  <h1 id="appTitle">Nosso Cantinho</h1>
+  <p id="appSubtitle">Um espaço só nosso.</p>
+</header>
+
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <div class="couple-photo-wrap"><img id="couplePhoto" class="couple-photo" src="" alt="Foto do casal"><div id="couplePhotoPlaceholder" class="couple-photo-placeholder">💑</div></div>
+    <div class="label" id="coupleNames">Nosso amor</div>
+    <div class="counter" id="counter">— <small>dias juntos</small></div>
+    <div class="date" id="relationshipDate"></div>
+  </div>
+  <div class="section-title">Nosso espaço</div>
+  <div class="grid">
+    <div class="card" onclick="showPage('chat')"><div class="icon">💬</div><h3>Nosso Chat</h3><p>Envie fotos, áudios e texto.</p></div>
+    <div class="card" onclick="showPage('historia')"><div class="icon">💌</div><h3>Nossa história</h3><p>Momentos que marcaram vocês.</p></div>
+    <div class="card" onclick="showPage('fotos')"><div class="icon">📸</div><h3>Nossas fotos</h3><p>Memórias guardadas aqui.</p></div>
+    <div class="card" onclick="showPage('datas')"><div class="icon">📅</div><h3>Datas importantes</h3><p>Eventos e contagens regressivas.</p></div>
+    <div class="card" onclick="showPage('planos')"><div class="icon">✨</div><h3>Nossos planos</h3><p>O que ainda queremos viver.</p></div>
+    <div class="card" onclick="showPage('desejos')"><div class="icon">🔥</div><h3>Lista secreta</h3><p>Desejos, favoritos e sorteio.</p></div>
+    <div class="card" onclick="showPage('today')"><div class="icon">🎲</div><h3>O que fazer hoje?</h3><p>Sorteie uma ideia criada por vocês.</p></div>
+    <div class="card" onclick="showPage('desafios')"><div class="icon">🥰</div><h3>Desafio do casal</h3><p>Escolha um desafio personalizado.</p></div>
+    <div class="card" onclick="showPage('checkin')"><div class="icon">🌙</div><h3>Check-in</h3><p>Como você está se sentindo?</p></div>
+    <div class="card" onclick="showPage('cartinhas')"><div class="icon">💌</div><h3>Cartinhas</h3><p>Mensagens especiais.</p></div>
+    <div class="card" onclick="showPage('mural')"><div class="icon">❤️</div><h3>Mural</h3><p>Pequenas memórias e frases.</p></div>
+    <div class="card" onclick="showPage('quiz')"><div class="icon">🧩</div><h3>Quiz do casal</h3><p>Perguntas criadas por vocês.</p></div>
+    <div class="card" onclick="showPage('ajustes')"><div class="icon">⚙️</div><h3>Configurações</h3><p>Personalize todo o conteúdo.</p></div>
+  </div>
+  <div class="message"><div class="message-title">💖 Recadinho</div><p id="homeMessage">Personalize este espaço em Configurações.</p></div>
+</section>
+
+<!-- CHAT COM ROLAGEM E HORÁRIOS -->
+<section id="chat" class="page">
+  <div class="chat-container">
+    <div class="chat-topbar">
+      <button class="back" onclick="showPage('home')" aria-label="Voltar">‹</button>
+      <div class="chat-top-info">
+        <div class="chat-top-title">Mensagens</div>
+        <div class="chat-top-status">conversa privada</div>
+      </div>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-composer-wrap">
+      <div id="chatRecording" class="chat-recording">
+        <span class="record-dot"></span><span id="recordTime" class="record-time">0:00</span>
+        <span id="recordLabel" class="record-label">Gravando áudio</span>
+        <span class="record-wave"><i></i><i></i><i></i><i></i><i></i></span>
+        <button type="button" class="btn secondary record-finish" onclick="finishAudioRecording()">✓ Pronto</button>
+      </div>
+      <div id="chatPreview" class="chat-preview hidden">
+        <div id="audioPreviewArea" class="audio-preview-area hidden">
+          <button type="button" id="previewPlayBtn" class="voice-play" onclick="togglePreviewAudio()">▶</button>
+          <div class="voice-wave preview-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <span id="previewDuration" class="voice-duration">0:00</span>
+        </div>
+        <span id="previewText" style="font-size:12px;color:#aaa;flex:1"></span>
+        <div class="preview-actions">
+          <button type="button" onclick="cancelMediaUpload()" class="btn danger">✕</button>
+          <button type="button" id="sendPreviewBtn" onclick="sendSelectedMedia()" class="btn">➤</button>
+        </div>
+      </div>
+      <form id="chatForm" class="chat-form">
+        <label for="chatImageInput" class="btn secondary chat-btn-action" title="Anexar foto" aria-label="Anexar foto">📷</label>
+        <input type="file" id="chatImageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+        <input type="text" id="chatInput" placeholder="Mensagem" autocomplete="off">
+        <button type="button" id="micBtn" class="btn secondary chat-btn-action chat-mic-btn" onclick="toggleAudioRecording()" title="Gravar áudio" aria-label="Gravar áudio">🎙️</button>
+        <button type="submit" class="btn chat-btn-action chat-send-btn" title="Enviar" aria-label="Enviar">➤</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="historia" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>💌 Nossa história</h2></div>
+  <div class="panel" id="historyView"></div>
+</section>
+
+<section id="fotos" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>📸 Nossas fotos</h2></div>
+  <div class="panel"><div class="photos" id="photosView"></div></div>
+</section>
+
+<section id="datas" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>📅 Datas importantes</h2></div>
+  <div class="panel" id="datesView"></div>
+</section>
+
+<section id="planos" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>✨ Nossos planos</h2></div>
+  <div class="panel" id="plansView"></div>
+</section>
+
+<section id="desejos" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>🔥 Lista secreta</h2></div>
+  <div class="panel">
+    <div class="row"><button class="btn full" onclick="drawDesire()">🎲 Sortear um desejo</button><button class="btn secondary full" onclick="filterDesires()">⭐ Favoritos</button></div>
+    <div id="desireDraw" class="today-result hidden"></div>
+    <div id="desiresView"></div>
+  </div>
+</section>
+
+<section id="today" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>🎲 O que vamos fazer hoje?</h2></div>
+  <div class="panel today-panel">
+    <div class="today-icon">🎲</div><h3>Deixa o sorteio decidir</h3>
+    <p class="muted">As opções abaixo são totalmente criadas por vocês em ⚙️ Configurações.</p>
+    <button class="btn today-btn" onclick="drawToday()">Sortear agora</button>
+    <div id="todayResult" class="today-result"><span class="today-placeholder">Nenhuma opção sorteada ainda.</span></div>
+    <div id="todayQuickEdit" class="small" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<section id="desafios" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>🥰 Desafio do casal</h2></div>
+  <div class="panel today-panel">
+    <div class="today-icon">🥰</div><h3>Um desafio só de vocês</h3>
+    <p class="muted">Crie quantos desafios quiser em ⚙️ Configurações.</p>
+    <button class="btn today-btn" onclick="drawChallenge()">Sortear desafio</button>
+    <div id="challengeResult" class="today-result"><span class="today-placeholder">Nenhum desafio sorteado ainda.</span></div>
+    <div id="challengeQuickEdit" class="small" style="margin-top:12px"></div>
+  </div>
+</section>
+
+<section id="checkin" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>🌙 Check-in</h2></div>
+  <div class="panel">
+    <p class="muted" style="margin-bottom:14px">Como você está se sentindo hoje?</p>
+    <div id="moodGrid" class="mood-grid"></div>
+    <textarea id="checkinNote" placeholder="Quer deixar uma mensagem? (opcional)"></textarea>
+    <button class="btn full" onclick="saveCheckin()">Salvar check-in</button>
+  </div>
+  <div class="panel"><h3 style="margin-bottom:8px">Histórico recente</h3><div id="checkinHistory"></div></div>
+</section>
+
+<section id="cartinhas" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>💌 Cartinhas</h2></div>
+  <div class="panel" id="lettersView"></div>
+</section>
+
+<section id="mural" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>❤️ Mural</h2></div>
+  <div class="panel" id="muralView"></div>
+</section>
+
+<section id="quiz" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>🧩 Quiz do casal</h2></div>
+  <div class="panel" id="quizView"></div>
+</section>
+
+<section id="ajustes" class="page">
+  <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>⚙️ Configurações</h2></div>
+  <div class="notice" style="margin-bottom:12px">✨ <b>Aqui é o único lugar para editar o conteúdo.</b> As alterações são salvas na nuvem no Firebase!</div>
+  <div class="settings-nav" id="settingsNav">
+    <button class="active" onclick="openSettings('casal',this)">💑 Casal</button>
+    <button onclick="openSettings('historiaSet',this)">💌 História</button>
+    <button onclick="openSettings('fotosSet',this)">📸 Fotos</button>
+    <button onclick="openSettings('datasSet',this)">📅 Datas</button>
+    <button onclick="openSettings('planosSet',this)">✨ Planos</button>
+    <button onclick="openSettings('desejosSet',this)">🔥 Desejos</button>
+    <button onclick="openSettings('todaySet',this)">🎲 Hoje</button>
+    <button onclick="openSettings('desafiosSet',this)">🥰 Desafios</button>
+    <button onclick="openSettings('moodsSet',this)">🌙 Check-in</button>
+    <button onclick="openSettings('lettersSet',this)">💌 Cartinhas</button>
+    <button onclick="openSettings('muralSet',this)">❤️ Mural</button>
+    <button onclick="openSettings('quizSet',this)">🧩 Quiz</button>
+  </div>
+
+  <div id="casal" class="settings-section active panel">
+    <h3>💑 Identidade do casal</h3>
+    <input id="setTitle" placeholder="Nome do aplicativo">
+    <input id="setSubtitle" placeholder="Frase abaixo do título">
+    <input id="setNames" placeholder="Nome do casal">
+    <label class="field-label" for="couplePhotoFile">📷 Foto do casal</label>
+    <input id="couplePhotoFile" type="file" accept="image/*" onchange="previewCouplePhoto(event)">
+    <div id="couplePhotoPreview" class="couple-photo-preview"></div>
+    <button type="button" class="btn secondary full" onclick="removeCouplePhoto()">🗑️ Remover foto</button>
+    <div class="notification-box">
+      <div><b>🔔 Notificações</b><div class="small">Receba avisos quando o outro enviar mensagem ou alterar o Cantinho.</div></div>
+      <button type="button" class="btn full" id="enableNotificationsBtn" onclick="enableNotifications()">Ativar notificações</button>
+      <div id="notificationStatus" class="small">Verificando...</div>
+    </div>
+    <input id="setDate" type="date">
+    <textarea id="setMessage" placeholder="Recadinho da página inicial"></textarea>
+    <button class="btn full" onclick="saveCouple()">Salvar personalização</button>
+  </div>
+
+  <div id="historiaSet" class="settings-section panel">
+    <h3>💌 Editar história</h3>
+    <input id="histTitle" placeholder="Título do momento"><input id="histDate" type="date"><textarea id="histText" placeholder="O que aconteceu?"></textarea>
+    <button class="btn full" onclick="addHistory()">Adicionar momento</button><div class="divider"></div><div id="historyEditor"></div>
+  </div>
+
+  <div id="fotosSet" class="settings-section panel">
+    <h3>📸 Editar fotos</h3>
+    <input id="photoCaption" placeholder="Legenda"><input id="photoUrl" placeholder="URL da imagem (opcional)" type="url">
+    <input id="photoFile" type="file" accept="image/*">
+    <button class="btn full" onclick="addPhoto()">Adicionar foto</button><div class="divider"></div><div id="photosEditor"></div>
+  </div>
+
+  <div id="datasSet" class="settings-section panel">
+    <h3>📅 Editar calendário</h3>
+    <input id="dateTitle" placeholder="Nome da data"><input id="dateWhen" type="date"><input id="dateType" placeholder="Tipo: viagem, aniversário, reserva..."><textarea id="dateNote" placeholder="Observação"></textarea>
+    <button class="btn full" onclick="addDate()">Adicionar data</button><div class="divider"></div><div id="datesEditor"></div>
+  </div>
+
+  <div id="planosSet" class="settings-section panel">
+    <h3>✨ Editar planos</h3>
+    <input id="planTitle" placeholder="Nome do plano"><textarea id="planText" placeholder="Detalhes do plano"></textarea>
+    <button class="btn full" onclick="addPlan()">Adicionar plano</button><div class="divider"></div><div id="plansEditor"></div>
+  </div>
+
+  <div id="desejosSet" class="settings-section panel">
+    <h3>🔥 Editar lista secreta</h3>
+    <input id="wishText" placeholder="Escreva o desejo"><div class="row"><input id="wishPerson" placeholder="Para quem?"><select id="wishCat"><option value="💋 Beijo">💋 Beijo</option><option value="🔥 Intimidade">🔥 Intimidade</option><option value="😏 Brincadeira">😏 Brincadeira</option><option value="💕 Carinho">💕 Carinho</option><option value="🎁 Surpresa">🎁 Surpresa</option></select></div>
+    <div class="row"><select id="wishLevel"><option value="1">⭐</option><option value="2">⭐⭐</option><option value="3">⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="5">⭐⭐⭐⭐⭐</option></select><select id="wishFav"><option value="false">♡ Normal</option><option value="true">❤️ Favorito</option></select></div>
+    <button class="btn full" onclick="addWish()">Adicionar desejo</button><div class="divider"></div><div id="wishesEditor"></div>
+  </div>
+
+  <div id="todaySet" class="settings-section panel">
+    <h3>🎲 Editar opções de “O que fazer hoje?”</h3>
+    <div class="row"><input id="todayText" placeholder="Ex.: cozinhar juntos"><button class="btn" onclick="addToday()">Adicionar</button></div>
+    <div id="todayEditor"></div>
+  </div>
+
+  <div id="desafiosSet" class="settings-section panel">
+    <h3>🥰 Editar desafios do casal</h3>
+    <textarea id="challengeText" placeholder="Escreva um desafio personalizado"></textarea><button class="btn full" onclick="addChallenge()">Adicionar desafio</button>
+    <div class="divider"></div><div id="challengeEditor"></div>
+  </div>
+
+  <div id="moodsSet" class="settings-section panel">
+    <h3>🌙 Editar opções do Check-in</h3>
+    <div class="row"><input id="moodEmoji" placeholder="😊"><input id="moodLabel" placeholder="Como estou"></div><button class="btn full" onclick="addMood()">Adicionar opção</button>
+    <div class="divider"></div><div id="moodsEditor"></div>
+  </div>
+
+  <div id="lettersSet" class="settings-section panel">
+    <h3>💌 Editar cartinhas</h3>
+    <input id="letterTitle" placeholder="Título da cartinha"><textarea id="letterText" placeholder="Escreva a cartinha"></textarea><button class="btn full" onclick="addLetter()">Adicionar cartinha</button>
+    <div class="divider"></div><div id="lettersEditor"></div>
+  </div>
+
+  <div id="muralSet" class="settings-section panel">
+    <h3>❤️ Editar mural</h3>
+    <textarea id="muralText" placeholder="Uma lembrança, frase ou momento"></textarea><button class="btn full" onclick="addMural()">Adicionar ao mural</button>
+    <div class="divider"></div><div id="muralEditor"></div>
+  </div>
+
+  <div id="quizSet" class="settings-section panel">
+    <h3>🧩 Editar quiz</h3>
+    <input id="quizQuestion" placeholder="Pergunta"><input id="quizA" placeholder="Resposta A"><input id="quizB" placeholder="Resposta B"><input id="quizC" placeholder="Resposta C"><input id="quizD" placeholder="Resposta D">
+    <select id="quizCorrect"><option value="0">Correta: A</option><option value="1">Correta: B</option><option value="2">Correta: C</option><option value="3">Correta: D</option></select>
+    <button class="btn full" onclick="addQuiz()">Adicionar pergunta</button><div class="divider"></div><div id="quizEditor"></div>
+  </div>
+
+  <div class="panel">
+    <h3>👤 Conta e Dados</h3>
+    <button class="btn secondary full" onclick="logout()" style="margin-bottom:10px">Sair da Conta</button>
+    <button class="btn danger full" onclick="resetApp()">Apagar todos os dados</button>
+  </div>
+</section>
+</main>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" onclick="showPage('home',this)"><div class="nav-icon">⌂</div>Início</div>
+  <div class="nav-item" onclick="showPage('chat',this)"><div class="nav-icon">💬</div>Chat</div>
+  <div class="nav-item" onclick="showPage('cartinhas',this)"><div class="nav-icon">💌</div>Cartinhas</div>
+  <div class="nav-item" onclick="showPage('fotos',this)"><div class="nav-icon">📸</div>Fotos</div>
+  <div class="nav-item" onclick="showPage('ajustes',this)"><div class="nav-icon">⚙️</div>Ajustes</div>
+</nav>
+<div id="toast" class="toast"></div>
+
+<div id="photoLightbox" class="photo-lightbox" onclick="closePhotoLightbox(event)">
+  <button class="lb-close" aria-label="Fechar" onclick="closePhotoLightbox()">×</button>
+  <button class="lb-prev" aria-label="Foto anterior" onclick="event.stopPropagation();changePhoto(-1)">‹</button>
+  <img id="lightboxImage" src="" alt="" onclick="event.stopPropagation()">
+  <button class="lb-next" aria-label="Próxima foto" onclick="event.stopPropagation();changePhoto(1)">›</button>
+  <div id="lightboxCounter" class="lb-counter"></div>
+  <div id="lightboxCaption" class="lb-caption"></div>
+</div>
+
+</div>
+
+<!-- PWA + notificações -->
+<script>
+  window.__swRegistration = null;
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        window.__swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
+        console.log('Service Worker PWA/FCM ativo:', window.__swRegistration.scope);
+      } catch (e) { console.error('Falha no Service Worker:', e); }
+    });
+  }
+</script>
+<!-- CORREÇÃO ROBUSTA DO BOTÃO ENTRAR -->
+<script>
+(function(){
+  function setupAuthButton(){
+    const form=document.getElementById('authForm');
+    const btn=document.getElementById('authSubmitBtn');
+    if(!form || !btn) return;
+    const submit=async function(){
+      btn.disabled=true;
+      const old=btn.textContent;
+      btn.textContent='Entrando...';
+      try {
+        if(typeof window.handleAuth !== 'function'){
+          throw new Error('O sistema de autenticação ainda não carregou. Recarregue a página e tente novamente.');
+        }
+        await Promise.race([
+          window.handleAuth({preventDefault:function(){}}),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('O Firebase demorou para responder. Verifique a internet do celular e tente novamente.')), 15000))
+        ]);
+      } catch(err) {
+        console.error('Falha no botão Entrar:',err);
+        alert(err && err.message ? err.message : 'Não foi possível entrar.');
+      } finally {
+        btn.disabled=false;
+        btn.textContent=old;
+      }
+    };
+    btn.addEventListener('click',submit);
+    form.addEventListener('submit',function(e){e.preventDefault();});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setupAuthButton);
+  else setupAuthButton();
+})();
+</script>
+
+<!-- FIREBASE E LÓGICA CORRIGIDA -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+  import { arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBk67E8baV-i1whhVTWzodyQNE48T8DPis",
+    authDomain: "apprelacionamento-d0906.firebaseapp.com",
+    projectId: "apprelacionamento-d0906",
+    storageBucket: "apprelacionamento-d0906.firebasestorage.app",
+    messagingSenderId: "190608228219",
+    appId: "1:190608228219:web:5215badc045d9ddc6ac7de"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
+  const docRef = doc(db, "appData", "nossoCantinho");
+  const messaging = getMessaging(app);
+  // Cole aqui a CHAVE PÚBLICA VAPID gerada no Firebase Console > Configurações > Cloud Messaging.
+  const VAPID_KEY = "COLE_SUA_CHAVE_VAPID_AQUI";
+  let lastSyncedData = null;
+
+  window.isSignUp = false;
+  let isInitialLoad = true;
+
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let selectedFile = null;
+  let mediaType = null;
+
+  const defaults = {
+    couple:{title:'Nosso Cantinho',subtitle:'Um espaço só nosso.',names:'Nosso amor',date:'',message:'Personalize este espaço em Configurações.',photo:''},
+    history:[],photos:[],dates:[],plans:[],wishes:[],today:[],challenges:[],
+    moods:[{emoji:'😊',label:'Muito bem'},{emoji:'🙂',label:'Bem'},{emoji:'😐',label:'Normal'},{emoji:'🥺',label:'Com saudade'},{emoji:'❤️',label:'Precisando de carinho'}],
+    letters:[],mural:[],quiz:[],checkins:[]
+  };
+
+  window.data = JSON.parse(JSON.stringify(defaults));
+  window.selectedMood = -1;
+  window.quizIndex = 0;
+  window.desireFavorites = false;
+  window.currentPhotoIndex = -1;
+
+  // --- CORREÇÃO DE AUTENTICAÇÃO ---
+  window.toggleAuthMode = function() {
+    window.isSignUp = !window.isSignUp;
+    const nameInput = document.getElementById('authName');
+    const title = document.getElementById('authTitle');
+    const submitBtn = document.getElementById('authSubmitBtn');
+    const toggleBtn = document.getElementById('authToggleBtn');
+
+    if (window.isSignUp) {
+      title.textContent = 'Criar conta do Casal';
+      submitBtn.textContent = 'Cadastrar';
+      toggleBtn.textContent = 'Já tem conta? Entrar';
+      nameInput.style.display = 'block';
+    } else {
+      title.textContent = 'Entrar no Cantinho';
+      submitBtn.textContent = 'Entrar';
+      toggleBtn.textContent = 'Não tem conta? Cadastrar';
+      nameInput.style.display = 'none';
+    }
+  };
+
+  window.handleAuth = async function(e) {
+    if(e) e.preventDefault();
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const name = document.getElementById('authName').value.trim();
+
+    if (!email || !password) {
+      toast('Preencha e-mail e senha.');
+      return;
+    }
+
+    try {
+      if (window.isSignUp) {
+        if (!name) { toast('Digite seu nome!'); return; }
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: name });
+        toast(`Bem-vindo(a), ${name}! ❤️`);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+        toast('Login realizado!');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro de acesso: ' + (error.message || 'Verifique e-mail e senha'));
+    }
+  };
+
+  window.__authReady = true;
+
+  async function updateNotificationUI(){
+    const status=document.getElementById('notificationStatus');
+    const btn=document.getElementById('enableNotificationsBtn');
+    if(!status || !btn) return;
+    if(!('Notification' in window) || !('serviceWorker' in navigator)){ status.textContent='Este navegador não oferece notificações push.'; btn.disabled=true; return; }
+    if(Notification.permission==='granted'){ status.textContent='✅ Notificações ativadas neste aparelho.'; btn.textContent='Notificações ativadas'; btn.disabled=false; }
+    else if(Notification.permission==='denied'){ status.textContent='🚫 Notificações bloqueadas. Ative-as nas configurações do navegador.'; btn.textContent='Notificações bloqueadas'; }
+    else { status.textContent='Toque para permitir notificações.'; btn.textContent='🔔 Ativar notificações'; }
+  }
+
+  window.enableNotifications = async function(){
+    try{
+      if(VAPID_KEY.startsWith('COLE_')){ toast('Falta configurar a chave VAPID do Firebase.'); return; }
+      const permission = await Notification.requestPermission();
+      if(permission !== 'granted'){ updateNotificationUI(); toast('Permissão de notificação não concedida.'); return; }
+      const reg = window.__swRegistration || await navigator.serviceWorker.ready;
+      const token = await getToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+      if(!token || !auth.currentUser) throw new Error('Não foi possível gerar o token de notificação.');
+      await setDoc(doc(db,'users',auth.currentUser.uid),{
+        nome:auth.currentUser.displayName||'Usuário',
+        email:auth.currentUser.email||'',
+        tokens:arrayUnion(token),
+        notificationUpdatedAt:Date.now()
+      },{merge:true});
+      updateNotificationUI();
+      toast('🔔 Notificações ativadas!');
+    }catch(e){ console.error('FCM:',e); toast('Não foi possível ativar as notificações.'); }
+  };
+
+  onMessage(messaging,(payload)=>{
+    console.log('Notificação recebida com o app aberto:',payload);
+    const title=payload.notification?.title || payload.data?.title || 'Nosso Cantinho ❤️';
+    const body=payload.notification?.body || payload.data?.body || 'Há uma novidade no Cantinho.';
+    toast(`🔔 ${title}: ${body}`);
+  });
+
+  window.logout = function() {
+    signOut(auth).then(() => toast('Sessão encerrada.'));
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    const loginOverlay = document.getElementById('loginOverlay');
+    if (user) {
+      if (loginOverlay) loginOverlay.style.display = 'none';
+      initDataSync();
+      initChat();
+      updateNotificationUI();
+    } else {
+      if (loginOverlay) loginOverlay.style.display = 'flex';
+    }
+  });
+
+  // --- FORMATADORES DE DATA/HORA PARA O CHAT ---
+  function formatMsgTime(dateObj) {
+    if (!dateObj) return '';
+    const d = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatMsgDate(dateObj) {
+    if (!dateObj) return '';
+    const d = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  // --- MÍDIAS E CHAT ---
+  window.handleImageSelect = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      selectedFile = file;
+      mediaType = 'image';
+      document.getElementById('previewText').textContent = `📷 Imagem: ${file.name}`;
+      document.getElementById('chatPreview').classList.remove('hidden');
+    }
+  };
+
+  let recordingStartedAt = 0;
+  let recordingElapsedBeforePause = 0;
+  let recordingTimer = null;
+  let previewAudio = null;
+  let recordingMimeType = '';
+  let recordingExt = 'webm';
+
+  function getAudioMime() {
+    const options=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];
+    return window.MediaRecorder?.isTypeSupported ? (options.find(t=>MediaRecorder.isTypeSupported(t)) || '') : '';
+  }
+  function formatRecordTime(ms){const total=Math.floor(ms/1000);return Math.floor(total/60)+':'+String(total%60).padStart(2,'0');}
+  function stopRecordingTimer(){if(recordingTimer)clearInterval(recordingTimer);recordingTimer=null;}
+  function updateRecordingTimer(){const e=document.getElementById('recordTime');if(e)e.textContent=formatRecordTime(recordingElapsedBeforePause+(Date.now()-recordingStartedAt));}
+  function startRecordingTimer(){stopRecordingTimer();recordingStartedAt=Date.now();recordingTimer=setInterval(updateRecordingTimer,250);}
+  function stopRecordingUI(){const b=document.getElementById('micBtn'),r=document.getElementById('chatRecording');b?.classList.remove('recording');if(b)b.textContent='🎙️';r?.classList.remove('active','paused');stopRecordingTimer();}
+  function resetAudioPreview(){if(previewAudio){previewAudio.pause();if(previewAudio.src?.startsWith('blob:'))URL.revokeObjectURL(previewAudio.src);previewAudio.src='';}previewAudio=null;document.getElementById('audioPreviewArea')?.classList.add('hidden');const b=document.getElementById('previewPlayBtn');if(b)b.textContent='▶';}
+  window.togglePreviewAudio=function(){if(!previewAudio)return;if(previewAudio.paused){previewAudio.play().then(()=>document.getElementById('previewPlayBtn').textContent='❚❚').catch(()=>toast('Não foi possível reproduzir o áudio.'));}else{previewAudio.pause();document.getElementById('previewPlayBtn').textContent='▶';}};
+  window.finishAudioRecording=function(){if(!mediaRecorder||!['recording','paused'].includes(mediaRecorder.state))return;stopRecordingTimer();if(mediaRecorder.state==='paused')mediaRecorder.resume();mediaRecorder.stop();};
+  window.toggleAudioRecording=async function(){
+    const mic=document.getElementById('micBtn'),box=document.getElementById('chatRecording'),label=document.getElementById('recordLabel'),time=document.getElementById('recordTime');
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast('Seu navegador não permite gravar áudio.');return;}
+    if(mediaRecorder?.state==='recording'){mediaRecorder.pause();recordingElapsedBeforePause+=Date.now()-recordingStartedAt;stopRecordingTimer();box?.classList.add('paused');if(label)label.textContent='Áudio pausado';if(mic){mic.textContent='▶';mic.classList.remove('recording');}return;}
+    if(mediaRecorder?.state==='paused'){mediaRecorder.resume();box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();return;}
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      recordingMimeType=getAudioMime();mediaRecorder=recordingMimeType?new MediaRecorder(stream,{mimeType:recordingMimeType}):new MediaRecorder(stream);recordingMimeType=mediaRecorder.mimeType||recordingMimeType||'audio/webm';recordingExt=recordingMimeType.includes('mp4')?'m4a':recordingMimeType.includes('ogg')?'ogg':'webm';audioChunks=[];recordingElapsedBeforePause=0;
+      box?.classList.add('active');box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(time)time.textContent='0:00';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();
+      mediaRecorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data);};
+      mediaRecorder.onerror=e=>{console.error(e);stream.getTracks().forEach(t=>t.stop());mediaRecorder=null;stopRecordingUI();toast('Erro ao gravar o áudio.');};
+      mediaRecorder.onstop=()=>{
+        stream.getTracks().forEach(t=>t.stop());const type=mediaRecorder?.mimeType||recordingMimeType||'audio/webm';const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';const blob=new Blob(audioChunks,{type});mediaRecorder=null;audioChunks=[];stopRecordingUI();
+        if(!blob.size){toast('Não foi possível criar o áudio.');return;}
+        selectedFile=blob;mediaType='audio';recordingMimeType=type;recordingExt=ext;resetAudioPreview();previewAudio=new Audio(URL.createObjectURL(blob));previewAudio.preload='metadata';previewAudio.onloadedmetadata=()=>{const d=isFinite(previewAudio.duration)?previewAudio.duration:0;document.getElementById('previewDuration').textContent=formatAudioDuration(d);};previewAudio.onended=()=>document.getElementById('previewPlayBtn').textContent='▶';
+        document.getElementById('audioPreviewArea').classList.remove('hidden');document.getElementById('previewText').textContent='🎙️ Áudio pronto. Ouça antes de enviar.';document.getElementById('chatPreview').classList.remove('hidden');
+      };
+      mediaRecorder.start(250);
+    }catch(err){console.error(err);stopRecordingUI();toast(err?.name==='NotAllowedError'?'Permita o microfone no navegador.':'Não foi possível acessar o microfone.');}
+  };
+  window.sendSelectedMedia=async function(){
+    if(!selectedFile)return;const user=auth.currentUser;if(!user){toast('Faça login novamente.');return;}const btn=document.getElementById('sendPreviewBtn');
+    try{if(btn){btn.disabled=true;btn.textContent='…';}toast('Enviando áudio...');const type=recordingMimeType||selectedFile.type||'audio/webm';const ext=recordingExt||'webm';const path=`chat_media/${Date.now()}_${user.uid}.${ext}`;const sr=ref(storage,path);await uploadBytes(sr,selectedFile,{contentType:type,cacheControl:'public,max-age=31536000'});const url=await getDownloadURL(sr);await addDoc(collection(db,'mensagens'),{texto:'',mediaUrl:url,mediaType:'audio',mediaContentType:type,remetenteId:user.uid,remetenteNome:user.displayName||'Amor',data:serverTimestamp()});cancelMediaUpload();toast('Áudio enviado!');}catch(err){console.error('Erro ao enviar áudio:',err);if(btn){btn.disabled=false;btn.textContent='➤';}toast('Não foi possível enviar o áudio.');}
+  };
+  window.cancelMediaUpload=function(){resetAudioPreview();selectedFile=null;mediaType=null;recordingMimeType='';recordingExt='webm';const i=document.getElementById('chatImageInput');if(i)i.value='';document.getElementById('chatPreview')?.classList.add('hidden');document.getElementById('previewText').textContent='';};
+
+  let activeChatAudio = null;
+  let activeChatVoice = null;
+  function formatAudioDuration(seconds) { const s=Math.max(0,Math.floor(seconds||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+  function initChat() {
+    const chatContainer = document.getElementById("chatMessages");
+    const chatQuery = query(collection(db, "mensagens"), orderBy("data", "asc"));
+
+    onSnapshot(chatQuery, (snapshot) => {
+      chatContainer.innerHTML = "";
+      const currentUser = auth.currentUser;
+      let lastDateStr = "";
+
+      if (snapshot.empty) {
+        chatContainer.innerHTML = '<div class="empty">Nenhuma mensagem ainda. Envie a primeira! ❤️</div>';
+        return;
+      }
+
+      snapshot.forEach((docSnap) => {
+        const msg = docSnap.data();
+        const msgId = docSnap.id;
+        const isMine = currentUser && (msg.remetenteId === currentUser.uid);
+
+        if (msg.data) {
+          const currentDateStr = formatMsgDate(msg.data);
+          if (currentDateStr !== lastDateStr) {
+            const dateDivider = document.createElement("div");
+            dateDivider.className = "chat-date-divider";
+            dateDivider.textContent = currentDateStr;
+            chatContainer.appendChild(dateDivider);
+            lastDateStr = currentDateStr;
+          }
+        }
+
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `chat-msg ${isMine ? 'mine' : 'other'}`;
+
+        if (!isMine && msg.remetenteNome) {
+          const senderDiv = document.createElement("div");
+          senderDiv.className = "chat-msg-sender";
+          senderDiv.textContent = msg.remetenteNome;
+          msgDiv.appendChild(senderDiv);
+        }
+
+        if (msg.texto) {
+          const textDiv = document.createElement("div");
+          textDiv.textContent = msg.texto + (msg.editado ? " (editado)" : "");
+          msgDiv.appendChild(textDiv);
+        }
+
+        if (msg.mediaUrl && msg.mediaType === 'image') {
+          const imgEl = document.createElement("img");
+          imgEl.src = msg.mediaUrl;
+          imgEl.className = "chat-img-media";
+          imgEl.onclick = () => {
+            document.getElementById('lightboxImage').src = msg.mediaUrl;
+            document.getElementById('photoLightbox').classList.add('active');
+          };
+          msgDiv.appendChild(imgEl);
+        }
+
+        if (msg.mediaUrl && msg.mediaType === 'audio') {
+          const voice = document.createElement('div');
+          voice.className = 'voice-player';
+          const play = document.createElement('button');
+          play.type = 'button'; play.className = 'voice-play'; play.textContent = '▶'; const ariaLabel = 'Reproduzir áudio'; play.setAttribute('aria-label', ariaLabel);
+          const wave = document.createElement('div'); wave.className = 'voice-wave';
+          const heights = [8,14,20,11,17,8,22,13,18,10,21,15,8,19,12,22,9,17,14,20,10,16,8,19,13,22];
+          heights.forEach(h => { const bar=document.createElement('i'); bar.style.height=h+'px'; wave.appendChild(bar); });
+          const duration = document.createElement('span'); duration.className='voice-duration'; duration.textContent='0:00';
+          const audio = new Audio(msg.mediaUrl); audio.preload='metadata';
+          audio.addEventListener('loadedmetadata',()=>{ if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration); });
+          audio.addEventListener('timeupdate',()=>{ if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration-audio.currentTime); });
+          audio.addEventListener('ended',()=>{ voice.classList.remove('playing'); play.textContent='▶'; if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration); });
+          play.onclick=()=>{ if(activeChatAudio && activeChatAudio!==audio){activeChatAudio.pause();activeChatVoice?.classList.remove('playing');activeChatVoice?.querySelector('.voice-play')?.replaceChildren(document.createTextNode('▶'));} if(audio.paused){audio.play().then(()=>{activeChatAudio=audio;activeChatVoice=voice;voice.classList.add('playing');play.textContent='❚❚';}).catch(()=>toast('Não foi possível reproduzir este áudio.'));}else{audio.pause();voice.classList.remove('playing');play.textContent='▶';} };
+          voice.append(play,wave,duration); msgDiv.appendChild(voice);
+        }
+
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "chat-msg-time";
+        timeDiv.textContent = formatMsgTime(msg.data);
+        msgDiv.appendChild(timeDiv);
+
+        if (isMine) {
+          const actionDiv = document.createElement("div");
+          actionDiv.className = "msg-actions";
+          if (msg.texto) {
+            actionDiv.innerHTML += `<span onclick="editChatMessage('${msgId}', '${esc(msg.texto)}')">Editar</span>`;
+          }
+          actionDiv.innerHTML += `<span onclick="deleteChatMessage('${msgId}')">Apagar</span>`;
+          msgDiv.appendChild(actionDiv);
+        }
+
+        chatContainer.appendChild(msgDiv);
+      });
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+  }
+
+  document.getElementById("chatForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if(selectedFile && mediaType==='audio'){await sendSelectedMedia();return;}
+    const input=document.getElementById("chatInput"),texto=input.value.trim(),user=auth.currentUser;
+    if(!texto&&!selectedFile)return;
+    try{let mediaUrl="";if(selectedFile){toast("Enviando mídia...");const sr=ref(storage,`chat_media/${Date.now()}_${selectedFile.name}`);await uploadBytes(sr,selectedFile);mediaUrl=await getDownloadURL(sr);}await addDoc(collection(db,"mensagens"),{texto,mediaUrl,mediaType,remetenteId:user?.uid||"anonimo",remetenteNome:user?.displayName||"Anônimo",data:serverTimestamp()});input.value="";cancelMediaUpload();}catch(err){console.error(err);toast("Erro ao enviar mensagem.");}
+  });
+
+  window.editChatMessage = async function(msgId, currentText) {
+    const newText = prompt("Edite sua mensagem:", currentText);
+    if (newText !== null && newText.trim() !== "") {
+      const msgRef = doc(db, "mensagens", msgId);
+      await updateDoc(msgRef, { texto: newText.trim(), editado: true });
+    }
+  };
+
+  window.deleteChatMessage = async function(msgId) {
+    if (confirm("Deseja apagar esta mensagem?")) {
+      const msgRef = doc(db, "mensagens", msgId);
+      await deleteDoc(msgRef);
+    }
+  };
+
+  function initDataSync() {
+    onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const incoming = snapshot.data();
+        window.data = merge(defaults, incoming);
+        lastSyncedData = JSON.parse(JSON.stringify(window.data));
+      } else {
+        lastSyncedData = JSON.parse(JSON.stringify(window.data));
+        save('configuração inicial', 'O Cantinho foi criado ❤️');
+      }
+      renderAll();
+    });
+  }
+
+  function merge(base, src) {
+    const out = JSON.parse(JSON.stringify(base));
+    Object.keys(src || {}).forEach(k => {
+      if (src[k] !== undefined) out[k] = src[k];
+    });
+    return out;
+  }
+
+  window.save = async function(customTitle, customBody) {
+    try {
+      const previous = lastSyncedData || {};
+      const current = JSON.parse(JSON.stringify(window.data));
+      let changedKey = Object.keys(current).find(k => JSON.stringify(current[k]) !== JSON.stringify(previous[k]));
+      const labels = {couple:'Identidade do casal',history:'Nossa história',photos:'Nossas fotos',dates:'Datas importantes',plans:'Nossos planos',wishes:'Lista de desejos',today:'Ideias para hoje',challenges:'Desafios do casal',moods:'Check-in',letters:'Cartinhas',mural:'Mural',quiz:'Quiz'};
+      const actor = auth.currentUser;
+      current._meta = {
+        actorUid: actor?.uid || '',
+        actorName: actor?.displayName || 'Alguém',
+        changeType: customTitle || labels[changedKey] || 'Atualização',
+        changeBody: customBody || `Alterou ${labels[changedKey] || 'o Cantinho'} ❤️`,
+        changedKey: changedKey || '',
+        changedAt: Date.now()
+      };
+      window.data = current;
+      await setDoc(docRef, current);
+      lastSyncedData = JSON.parse(JSON.stringify(current));
+      renderAll();
+    } catch(e) {
+      console.error("Erro ao salvar no Firebase:", e);
+      toast('Não foi possível salvar.');
+    }
+  };
+
+  window.esc = function(s) {
+    return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  };
+
+  window.toast = function(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  };
+
+  window.showPage = function(id, navEl) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.getElementById(id); 
+    if(page) page.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if(navEl) navEl.classList.add('active');
+    else if(id === 'home') document.querySelector('.nav-item')?.classList.add('active');
+    document.body.classList.toggle('chat-open', id === 'chat');
+    window.scrollTo(0,0);
+    if(id === 'checkin') renderCheckin();
+    if(id === 'chat') {
+      const c = document.getElementById("chatMessages");
+      c.scrollTop = c.scrollHeight;
+    }
+  };
+
+  window.openSettings = function(id, btn) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    document.querySelectorAll('#settingsNav button').forEach(b => b.classList.remove('active'));
+    btn?.classList.add('active');
+  };
+
+  function daysTogether() {
+    if(!window.data.couple.date) return null;
+    const d = new Date(window.data.couple.date + 'T00:00:00'), now = new Date();
+    return Math.max(0, Math.floor((now - d) / 86400000));
+  }
+
+  function fmtDate(s) {
+    if(!s) return '';
+    const d = new Date(s + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  function renderHome() {
+    document.getElementById('appTitle').textContent = window.data.couple.title;
+    document.getElementById('appSubtitle').textContent = window.data.couple.subtitle;
+    document.getElementById('coupleNames').textContent = window.data.couple.names;
+    document.getElementById('homeMessage').textContent = window.data.couple.message;
+    document.getElementById('relationshipDate').textContent = window.data.couple.date ? ('Desde ' + fmtDate(window.data.couple.date)) : '';
+    const cp = document.getElementById('couplePhoto');
+    const ph = document.getElementById('couplePhotoPlaceholder');
+    if (cp && ph) {
+      if (window.data.couple.photo) { cp.src = window.data.couple.photo; cp.style.display = 'block'; ph.style.display = 'none'; }
+      else { cp.removeAttribute('src'); cp.style.display = 'none'; ph.style.display = 'flex'; }
+    }
+    const days = daysTogether();
+    document.getElementById('counter').innerHTML = days === null ? '— <small>dias juntos</small>' : days + ' <small>dias juntos</small>';
+  }
+
+  function renderHistory() {
+    const v = document.getElementById('historyView');
+    v.innerHTML = window.data.history.length ? '<div class="timeline">' + window.data.history.map((x,i) => `<div class="event"><h3>${esc(x.title)}</h3><div class="small">${fmtDate(x.date)}</div><p>${esc(x.text)}</p><button class="btn secondary" onclick="editItem('history',${i})">✏️ Editar este momento</button></div>`).join('') + '</div>' : '<div class="empty">Nenhum momento cadastrado ainda.</div>';
+  }
+
+  function renderPhotos() {
+    const v = document.getElementById('photosView');
+    v.innerHTML = window.data.photos.length ? window.data.photos.map((x,i) => `<div class="photo">${x.src ? `<img src="${esc(x.src)}" alt="" onclick="openPhotoLightbox(${i})">` : '<div style="height:115px;display:flex;align-items:center;justify-content:center;font-size:34px">📸</div>'}<div class="caption">${esc(x.caption)}</div><button class="btn secondary" onclick="editItem('photos',${i})">✏️ Editar</button></div>`).join('') : '<div class="empty" style="grid-column:1/-1">Nenhuma foto adicionada ainda.</div>';
+  }
+
+  function renderDates() {
+    const arr = [...window.data.dates].sort((a,b) => a.when.localeCompare(b.when));
+    const v = document.getElementById('datesView');
+    if(!arr.length) { v.innerHTML = '<div class="empty">Nenhuma data cadastrada ainda.</div>'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    v.innerHTML = arr.map(x => {
+      const i = window.data.dates.indexOf(x);
+      const d = new Date(x.when + 'T00:00:00');
+      const diff = Math.ceil((d - today) / 86400000);
+      return `<div class="item"><div class="item-title">${esc(x.title)}</div><div class="item-meta">${fmtDate(x.when)} · ${esc(x.type || 'Data especial')}</div><div class="small">${diff > 0 ? 'Faltam ' + diff + ' dias' : diff === 0 ? 'É hoje!' : 'Já aconteceu há ' + Math.abs(diff) + ' dias'}${x.note ? ' · ' + esc(x.note) : ''}</div><button class="btn secondary" onclick="editItem('dates',${i})">✏️ Editar esta data</button></div>`;
+    }).join('');
+  }
+
+  function renderPlans() {
+    const v = document.getElementById('plansView');
+    v.innerHTML = window.data.plans.length ? window.data.plans.map((x,i) => `<div class="item"><div class="item-title">✨ ${esc(x.title)}</div><div class="small">${esc(x.text)}</div><button class="btn secondary" onclick="editItem('plans',${i})">✏️ Editar este plano</button></div>`).join('') : '<div class="empty">Nenhum plano cadastrado ainda.</div>';
+  }
+
+  function renderDesires() {
+    const v = document.getElementById('desiresView');
+    let arr = window.desireFavorites ? window.data.wishes.filter(x => x.favorite) : window.data.wishes;
+    v.innerHTML = arr.length ? arr.map((x) => {
+      const real = window.data.wishes.indexOf(x);
+      return `<div class="desire"><input class="check" type="checkbox" ${x.done ? 'checked' : ''} onchange="toggleWish(${real})"><div class="desire-main"><div class="desire-title">${esc(x.text)}</div><div class="small">${esc(x.person || '')} ${x.category ? '<span class="tag">' + esc(x.category) + '</span>' : ''}</div><div class="stars">${'⭐'.repeat(Number(x.level) || 1)}</div></div><button class="heart-btn" onclick="toggleFav(${real})">${x.favorite ? '❤️' : '♡'}</button></div>`;
+    }).join('') : '<div class="empty">Nenhum desejo cadastrado.</div>';
+  }
+
+  window.drawDesire = function() {
+    const pool = window.data.wishes.filter(x => !x.done);
+    const box = document.getElementById('desireDraw');
+    box.classList.remove('hidden');
+    if(!pool.length) { box.innerHTML = '<span class="today-placeholder">Cadastre desejos em ⚙️ Configurações → Desejos.</span>'; return; }
+    const x = pool[Math.floor(Math.random() * pool.length)];
+    box.innerHTML = `<div><div class="result-emoji">🔥</div><div class="result-text">${esc(x.text)}</div><div class="small">${esc(x.category || '')} ${x.person ? '· ' + esc(x.person) : ''}</div></div>`;
+  };
+
+  window.filterDesires = function() {
+    window.desireFavorites = !window.desireFavorites;
+    renderDesires();
+    toast(window.desireFavorites ? 'Mostrando favoritos' : 'Mostrando todos');
+  };
+
+  window.toggleWish = function(i) { window.data.wishes[i].done = !window.data.wishes[i].done; save(); };
+  window.toggleFav = function(i) { window.data.wishes[i].favorite = !window.data.wishes[i].favorite; save(); };
+
+  window.drawToday = function() {
+    const box = document.getElementById('todayResult');
+    if(!window.data.today.length) { box.innerHTML = '<span class="today-placeholder">Nenhuma opção criada. Vá em ⚙️ Configurações → Hoje.</span>'; return; }
+    const x = window.data.today[Math.floor(Math.random() * window.data.today.length)];
+    box.innerHTML = `<div><div class="result-emoji">🎲</div><div class="result-text">${esc(x)}</div></div>`;
+  };
+
+  window.drawChallenge = function() {
+    const box = document.getElementById('challengeResult');
+    if(!window.data.challenges.length) { box.innerHTML = '<span class="today-placeholder">Nenhum desafio criado. Vá em ⚙️ Configurações → Desafios.</span>'; return; }
+    const x = window.data.challenges[Math.floor(Math.random() * window.data.challenges.length)];
+    box.innerHTML = `<div><div class="result-emoji">🥰</div><div class="result-text">${esc(x)}</div></div>`;
+  };
+
+  function renderTodayQuickEdit() {
+    const e = document.getElementById('todayQuickEdit'); if(!e) return;
+    e.innerHTML = window.data.today.length ? '<b>Opções:</b><div class="quick-edit">' + window.data.today.map((x,i) => `<button class="btn secondary" onclick="editItem('today',${i})">${esc(x)}</button>`).join('') + '</div>' : '';
+  }
+
+  function renderChallengeQuickEdit() {
+    const e = document.getElementById('challengeQuickEdit'); if(!e) return;
+    e.innerHTML = window.data.challenges.length ? '<b>Desafios:</b><div class="quick-edit">' + window.data.challenges.map((x,i) => `<button class="btn secondary" onclick="editItem('challenges',${i})">${esc(x)}</button>`).join('') + '</div>' : '';
+  }
+
+  function renderCheckin() {
+    const g = document.getElementById('moodGrid');
+    g.innerHTML = window.data.moods.map((m,i) => `<button class="mood-btn ${window.selectedMood === i ? 'selected' : ''}" onclick="selectMood(${i})"><div class="mood-emoji">${esc(m.emoji)}</div><div class="mood-label">${esc(m.label)}</div></button>`).join('');
+    const h = document.getElementById('checkinHistory');
+    h.innerHTML = window.data.checkins.length ? window.data.checkins.slice().reverse().slice(0,8).map(x => `<div class="item"><b>${esc(x.emoji)} ${esc(x.label)}</b><div class="item-meta">${fmtDate(x.date)}</div>${x.note ? '<div class="small">' + esc(x.note) + '</div>' : ''}</div>`).join('') : '<div class="empty">Nenhum check-in ainda.</div>';
+  }
+
+  window.selectMood = function(i) { window.selectedMood = i; renderCheckin(); };
+
+  window.saveCheckin = function() {
+    if(window.selectedMood < 0) { toast('Escolha uma opção primeiro.'); return; }
+    const m = window.data.moods[window.selectedMood];
+    window.data.checkins.push({ emoji: m.emoji, label: m.label, note: document.getElementById('checkinNote').value, date: new Date().toISOString().slice(0,10) });
+    document.getElementById('checkinNote').value = '';
+    window.selectedMood = -1;
+    save();
+    toast('Check-in salvo ❤️');
+  };
+
+  function renderLetters() {
+    const v = document.getElementById('lettersView');
+    v.innerHTML = window.data.letters.length ? window.data.letters.map((x,i) => `<div class="item"><div class="item-title">💌 ${esc(x.title)}</div><div class="small">${esc(x.text)}</div><button class="btn secondary" onclick="editItem('letters',${i})">✏️ Editar esta cartinha</button></div>`).join('') : '<div class="empty">Nenhuma cartinha ainda.</div>';
+  }
+
+  function renderMural() {
+    const v = document.getElementById('muralView');
+    v.innerHTML = window.data.mural.length ? window.data.mural.slice().reverse().map(x => {
+      const i = window.data.mural.indexOf(x);
+      return `<div class="item"><div>❤️ ${esc(x.text)}</div><div class="item-meta">${fmtDate(x.date)}</div><button class="btn secondary" onclick="editItem('mural',${i})">✏️ Editar esta lembrança</button></div>`;
+    }).join('') : '<div class="empty">Nenhuma lembrança no mural.</div>';
+  }
+
+  function renderQuiz() {
+    const v = document.getElementById('quizView');
+    if(!window.data.quiz.length) { v.innerHTML = '<div class="empty">Nenhuma pergunta criada ainda.</div>'; return; }
+    const q = window.data.quiz[window.quizIndex % window.data.quiz.length];
+    v.innerHTML = `<div class="item"><div class="small">Pergunta ${window.quizIndex % window.data.quiz.length + 1} de ${window.data.quiz.length}</div><h3 style="margin:8px 0 14px">${esc(q.question)}</h3>${q.options.map((o,i) => `<button class="btn secondary full" style="margin-top:8px;text-align:left" onclick="answerQuiz(${i},${q.correct})">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join('')}</div>`;
+  }
+
+  window.answerQuiz = function(i, c) {
+    toast(i === c ? 'Acertou! ❤️' : 'Quase! 😘');
+    window.quizIndex++;
+    setTimeout(renderQuiz, 500);
+  };
+
+  window.previewCouplePhoto = function(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem.'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast('A foto deve ter no máximo 5 MB.'); event.target.value=''; return; }
+    const r = new FileReader();
+    r.onload = () => {
+      window.data.couple.photo = r.result;
+      renderCouplePhotoPreview();
+      renderHome();
+    };
+    r.readAsDataURL(file);
+  };
+
+  function renderCouplePhotoPreview() {
+    const box = document.getElementById('couplePhotoPreview');
+    if (!box) return;
+    box.innerHTML = window.data.couple.photo ? `<img src="${esc(window.data.couple.photo)}" alt="Prévia da foto do casal">` : '<span>Nenhuma foto escolhida</span>';
+  }
+
+  window.removeCouplePhoto = function() {
+    window.data.couple.photo = '';
+    const input = document.getElementById('couplePhotoFile');
+    if (input) input.value = '';
+    renderCouplePhotoPreview();
+    renderHome();
+    toast('Foto removida. Clique em salvar para confirmar.');
+  };
+
+  window.saveCouple = function() {
+    window.data.couple.title = document.getElementById('setTitle').value.trim() || 'Nosso Cantinho';
+    window.data.couple.subtitle = document.getElementById('setSubtitle').value.trim();
+    window.data.couple.names = document.getElementById('setNames').value.trim() || 'Nosso amor';
+    window.data.couple.date = document.getElementById('setDate').value;
+    window.data.couple.message = document.getElementById('setMessage').value.trim();
+    save('Identidade do casal', 'A identidade do casal foi atualizada 💑');
+    toast('Personalização salva!');
+  };
+
+  window.addHistory = function() {
+    const title = document.getElementById('histTitle').value.trim(), date = document.getElementById('histDate').value, text = document.getElementById('histText').value.trim();
+    if(!title || !text) { toast('Preencha título e história.'); return; }
+    window.data.history.push({title, date, text}); clearIds('histTitle','histDate','histText'); save('Nova história', 'Um novo momento foi adicionado 💌'); toast('Momento adicionado!');
+  };
+
+  window.addPhoto = function() {
+    const caption = document.getElementById('photoCaption').value.trim(), url = document.getElementById('photoUrl').value.trim(), file = document.getElementById('photoFile').files[0];
+    if(file) {
+      const r = new FileReader();
+      r.onload = () => { window.data.photos.push({caption, src: r.result}); clearIds('photoCaption','photoUrl','photoFile'); save('Nova foto', 'Uma nova foto foi adicionada 📸'); toast('Foto adicionada!'); };
+      r.readAsDataURL(file);
+    } else if(url) {
+      window.data.photos.push({caption, src: url}); clearIds('photoCaption','photoUrl','photoFile'); save('Nova foto', 'Uma nova foto foi adicionada 📸'); toast('Foto adicionada!');
+    } else toast('Escolha uma imagem ou informe uma URL.');
+  };
+
+  window.addDate = function() { const title=document.getElementById('dateTitle').value.trim(),when=document.getElementById('dateWhen').value,type=document.getElementById('dateType').value.trim(),note=document.getElementById('dateNote').value.trim();if(!title||!when){toast('Preencha nome e data.');return}window.data.dates.push({title,when,type,note});clearIds('dateTitle','dateWhen','dateType','dateNote');save();toast('Data adicionada!'); };
+  window.addPlan = function() { const title=document.getElementById('planTitle').value.trim(),text=document.getElementById('planText').value.trim();if(!title){toast('Digite o nome do plano.');return}window.data.plans.push({title,text});clearIds('planTitle','planText');save();toast('Plano adicionado!'); };
+  window.addWish = function() { const text=document.getElementById('wishText').value.trim();if(!text){toast('Escreva o desejo.');return}window.data.wishes.push({text,person:document.getElementById('wishPerson').value.trim(),category:document.getElementById('wishCat').value,level:Number(document.getElementById('wishLevel').value),favorite:document.getElementById('wishFav').value==='true',done:false});clearIds('wishText','wishPerson');save();toast('Desejo adicionado!'); };
+  window.addToday = function() { const x=document.getElementById('todayText').value.trim();if(!x){toast('Escreva uma opção.');return}window.data.today.push(x);clearIds('todayText');save();toast('Opção adicionada!'); };
+  window.addChallenge = function() { const x=document.getElementById('challengeText').value.trim();if(!x){toast('Escreva um desafio.');return}window.data.challenges.push(x);clearIds('challengeText');save();toast('Desafio adicionado!'); };
+  window.addMood = function() { const emoji=document.getElementById('moodEmoji').value.trim(),label=document.getElementById('moodLabel').value.trim();if(!emoji||!label){toast('Preencha emoji e texto.');return}window.data.moods.push({emoji,label});clearIds('moodEmoji','moodLabel');save();toast('Opção de check-in adicionada!'); };
+  window.addLetter = function() { const title=document.getElementById('letterTitle').value.trim(),text=document.getElementById('letterText').value.trim();if(!title||!text){toast('Preencha título e texto.');return}window.data.letters.push({title,text});clearIds('letterTitle','letterText');save();toast('Cartinha adicionada!'); };
+  window.addMural = function() { const text=document.getElementById('muralText').value.trim();if(!text){toast('Escreva algo para o mural.');return}window.data.mural.push({text,date:new Date().toISOString().slice(0,10)});clearIds('muralText');save();toast('Mural atualizado!'); };
+  window.addQuiz = function() { const q=document.getElementById('quizQuestion').value.trim(),opts=['quizA','quizB','quizC','quizD'].map(id=>document.getElementById(id).value.trim());if(!q||opts.some(x=>!x)){toast('Preencha pergunta e as 4 respostas.');return}window.data.quiz.push({question:q,options:opts,correct:Number(document.getElementById('quizCorrect').value)});clearIds('quizQuestion','quizA','quizB','quizC','quizD');save();toast('Pergunta adicionada!'); };
+
+  function clearIds(...ids) { ids.forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; }); }
+
+  function editorButtons(type, i) {
+    return `<div class="item-actions"><button class="btn secondary" onclick="editItem('${type}',${i})">✏️ Editar</button><button class="btn danger" onclick="deleteItem('${type}',${i})">🗑️ Apagar</button></div>`;
+  }
+
+  function renderEditors() {
+    document.getElementById('historyEditor').innerHTML = window.data.history.length ? window.data.history.map((x,i) => `<div class="item"><b>${esc(x.title)}</b><div class="item-meta">${fmtDate(x.date)}</div><div class="small">${esc(x.text)}</div>${editorButtons('history',i)}</div>`).join('') : '<div class="empty">Nenhum momento.</div>';
+    document.getElementById('photosEditor').innerHTML = window.data.photos.length ? window.data.photos.map((x,i) => `<div class="item"><b>📸 ${esc(x.caption || 'Sem legenda')}</b>${editorButtons('photos',i)}</div>`).join('') : '<div class="empty">Nenhuma foto.</div>';
+    document.getElementById('datesEditor').innerHTML = window.data.dates.length ? window.data.dates.map((x,i) => `<div class="item"><b>${esc(x.title)}</b><div class="item-meta">${fmtDate(x.when)} · ${esc(x.type || '')}</div>${editorButtons('dates',i)}</div>`).join('') : '<div class="empty">Nenhuma data.</div>';
+    document.getElementById('plansEditor').innerHTML = window.data.plans.length ? window.data.plans.map((x,i) => `<div class="item"><b>${esc(x.title)}</b>${editorButtons('plans',i)}</div>`).join('') : '<div class="empty">Nenhum plano.</div>';
+    document.getElementById('wishesEditor').innerHTML = window.data.wishes.length ? window.data.wishes.map((x,i) => `<div class="item"><b>${esc(x.text)}</b><div class="item-meta">${esc(x.person || '')} · ${esc(x.category || '')} · ${'⭐'.repeat(x.level || 1)} ${x.favorite ? '❤️' : ''}</div>${editorButtons('wishes',i)}</div>`).join('') : '<div class="empty">Nenhum desejo.</div>';
+    document.getElementById('todayEditor').innerHTML = window.data.today.length ? window.data.today.map((x,i) => `<div class="item"><b>🎲 ${esc(x)}</b><div class="item-actions"><button class="btn danger" onclick="deleteItem('today',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhuma opção.</div>';
+    document.getElementById('challengeEditor').innerHTML = window.data.challenges.length ? window.data.challenges.map((x,i) => `<div class="item"><b>🥰 ${esc(x)}</b><div class="item-actions"><button class="btn danger" onclick="deleteItem('challenges',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhum desafio.</div>';
+    document.getElementById('moodsEditor').innerHTML = window.data.moods.length ? window.data.moods.map((x,i) => `<div class="item"><b>${esc(x.emoji)} ${esc(x.label)}</b><div class="item-actions"><button class="btn secondary" onclick="editMood(${i})">✏️ Editar</button><button class="btn danger" onclick="deleteItem('moods',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhuma opção.</div>';
+    document.getElementById('lettersEditor').innerHTML = window.data.letters.length ? window.data.letters.map((x,i) => `<div class="item"><b>💌 ${esc(x.title)}</b><div class="small">${esc(x.text)}</div>${editorButtons('letters',i)}</div>`).join('') : '<div class="empty">Nenhuma cartinha.</div>';
+    document.getElementById('muralEditor').innerHTML = window.data.mural.length ? window.data.mural.map((x,i) => `<div class="item"><b>❤️ ${esc(x.text)}</b>${editorButtons('mural',i)}</div>`).join('') : '<div class="empty">Nenhum item.</div>';
+    document.getElementById('quizEditor').innerHTML = window.data.quiz.length ? window.data.quiz.map((x,i) => `<div class="item"><b>🧩 ${esc(x.question)}</b><div class="item-meta">Resposta: ${String.fromCharCode(65+x.correct)}</div>${editorButtons('quiz',i)}</div>`).join('') : '<div class="empty">Nenhuma pergunta.</div>';
+  }
+
+  window.editMood = function(i) {
+    const m = window.data.moods[i], emoji = prompt('Emoji:', m.emoji), label = prompt('Texto:', m.label);
+    if(emoji !== null && label !== null) { window.data.moods[i] = { emoji: emoji.trim() || m.emoji, label: label.trim() || m.label }; save(); toast('Check-in atualizado!'); }
+  };
+
+  window.editItem = function(type, i) {
+    const x = window.data[type][i];
+    if(type === 'today' || type === 'challenges') { const n = prompt('Edite:', x); if(n !== null && n.trim()) { window.data[type][i] = n.trim(); save(); } return; }
+    if(type === 'mural') { const n = prompt('Edite:', x.text); if(n !== null && n.trim()) { x.text = n.trim(); save(); } return; }
+    if(type === 'history') { const title = prompt('Título:', x.title), text = prompt('História:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
+    if(type === 'plans') { const title = prompt('Plano:', x.title), text = prompt('Detalhes:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
+    if(type === 'letters') { const title = prompt('Título:', x.title), text = prompt('Texto:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
+    if(type === 'dates') { const title = prompt('Nome:', x.title), when = prompt('Data AAAA-MM-DD:', x.when), note = prompt('Observação:', x.note || ''); if(title !== null && when !== null) { x.title = title; x.when = when; x.note = note ?? x.note; save(); } return; }
+    if(type === 'wishes') { const text = prompt('Desejo:', x.text); if(text !== null && text.trim()) { x.text = text.trim(); save(); } return; }
+    if(type === 'quiz') { const q = prompt('Pergunta:', x.question); if(q !== null && q.trim()) { x.question = q.trim(); save(); } return; }
+    if(type === 'photos') { const c = prompt('Legenda:', x.caption || ''); if(c !== null) { x.caption = c; save(); } return; }
+  };
+
+  window.deleteItem = function(type, i) {
+    if(!confirm('Apagar este item?')) return;
+    window.data[type].splice(i, 1);
+    save();
+    toast('Item apagado.');
+  };
+
+  window.resetApp = function() {
+    if(confirm('Tem certeza? Todo o conteúdo personalizado será redefinido para o padrão.')) {
+      window.data = JSON.parse(JSON.stringify(defaults));
+      save();
+    }
+  };
+
+  window.openPhotoLightbox = function(index) {
+    if(!window.data.photos[index] || !window.data.photos[index].src) return;
+    window.currentPhotoIndex = index;
+    const box = document.getElementById('photoLightbox');
+    updatePhotoLightbox();
+    box.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  function updatePhotoLightbox() {
+    const x = window.data.photos[window.currentPhotoIndex];
+    if(!x || !x.src) return;
+    document.getElementById('lightboxImage').src = x.src;
+    document.getElementById('lightboxImage').alt = x.caption || 'Foto';
+    document.getElementById('lightboxCaption').textContent = x.caption || '';
+    document.getElementById('lightboxCounter').textContent = `${window.currentPhotoIndex + 1} / ${window.data.photos.length}`;
+  }
+
+  window.changePhoto = function(direction) {
+    const total = window.data.photos.length;
+    if(!total) return;
+    let next = window.currentPhotoIndex;
+    for(let i = 0; i < total; i++) {
+      next = (next + direction + total) % total;
+      if(window.data.photos[next] && window.data.photos[next].src) break;
+    }
+    if(window.data.photos[next] && window.data.photos[next].src) {
+      window.currentPhotoIndex = next;
+      updatePhotoLightbox();
+    }
+  };
+
+  window.closePhotoLightbox = function(event) {
+    if(event && event.target && event.target.id !== 'photoLightbox') return;
+    document.getElementById('photoLightbox').classList.remove('active');
+    document.body.style.overflow = '';
+    window.currentPhotoIndex = -1;
+  };
+
+  document.addEventListener('keydown', e => {
+    const box = document.getElementById('photoLightbox');
+    if(!box.classList.contains('active')) return;
+    if(e.key === 'Escape') closePhotoLightbox();
+    if(e.key === 'ArrowLeft') changePhoto(-1);
+    if(e.key === 'ArrowRight') changePhoto(1);
+  });
+
+  function fillSettings() {
+    document.getElementById('setTitle').value = window.data.couple.title;
+    document.getElementById('setSubtitle').value = window.data.couple.subtitle;
+    document.getElementById('setNames').value = window.data.couple.names;
+    document.getElementById('setDate').value = window.data.couple.date;
+    const input = document.getElementById('couplePhotoFile');
+    if (input) input.value = '';
+    renderCouplePhotoPreview();
+    document.getElementById('setMessage').value = window.data.couple.message;
+  }
+
+  function renderAll() {
+    renderHome();
+    renderHistory();
+    renderPhotos();
+    renderDates();
+    renderPlans();
+    renderDesires();
+    renderLetters();
+    renderMural();
+    renderQuiz();
+    renderTodayQuickEdit();
+    renderChallengeQuickEdit();
+    fillSettings();
+    renderEditors();
+    if(document.getElementById('checkin').classList.contains('active')) renderCheckin();
+  }
+</script>
+</body>
+</html>
