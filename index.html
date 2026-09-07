@@ -463,6 +463,12 @@ body.chat-open .bottom-nav{display:none}
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
+        // Remove um eventual SW antigo chamado sw.js que possa estar servindo cache de uma versão anterior.
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => {
+          const url = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || '';
+          return /\/sw\.js(?:\?|$)/.test(url) ? reg.unregister() : Promise.resolve(false);
+        }));
         window.__swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
         console.log('Service Worker PWA/FCM ativo:', window.__swRegistration.scope);
       } catch (e) { console.error('Falha no Service Worker:', e); }
@@ -481,13 +487,16 @@ body.chat-open .bottom-nav{display:none}
       const old=btn.textContent;
       btn.textContent='Entrando...';
       try {
-        if(typeof window.handleAuth !== 'function'){
-          throw new Error('O sistema de autenticação ainda não carregou. Recarregue a página e tente novamente.');
+        // O script principal do Firebase é type=module e pode terminar de carregar
+        // alguns instantes depois deste botão. Aguarda a função em vez de acusar erro.
+        const started = Date.now();
+        while(typeof window.handleAuth !== 'function' && Date.now() - started < 15000){
+          await new Promise(r => setTimeout(r, 100));
         }
-        await Promise.race([
-          window.handleAuth({preventDefault:function(){}}),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('O Firebase demorou para responder. Verifique a internet do celular e tente novamente.')), 15000))
-        ]);
+        if(typeof window.handleAuth !== 'function'){
+          throw new Error('O Firebase não carregou. Verifique sua internet e recarregue a página.');
+        }
+        await window.handleAuth({preventDefault:function(){}});
       } catch(err) {
         console.error('Falha no botão Entrar:',err);
         alert(err && err.message ? err.message : 'Não foi possível entrar.');
@@ -510,7 +519,8 @@ body.chat-open .bottom-nav{display:none}
   import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+  // Firebase Messaging é carregado somente quando o usuário ativa as notificações.
+  // Isso evita que um navegador sem suporte a Push impeça o restante do aplicativo de carregar.
   import { arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -527,9 +537,11 @@ body.chat-open .bottom-nav{display:none}
   const auth = getAuth(app);
   const storage = getStorage(app);
   const docRef = doc(db, "appData", "nossoCantinho");
-  const messaging = getMessaging(app);
   // Cole aqui a CHAVE PÚBLICA VAPID gerada no Firebase Console > Configurações > Cloud Messaging.
-  const VAPID_KEY =BC-efcnJnCIpVbFvTbKtqcP9-TGbuouO2ZC1XAuxyqwO0Ytx7kvXVYCdwzy-LDBTWS2ifLgJtB6Y30eCHh4jiZ0;
+  const VAPID_KEY = "BC-efcnJnCIpVbFvTbKtqcP9-TGbuouO2ZC1XAuxxyqw00Ytx7kvXYVCdwzy-LDBTWS2ifLgJtB6Y30eCHh4jiz0";
+  let messaging = null;
+  let messagingGetToken = null;
+  let messagingOnMessage = null;
   let lastSyncedData = null;
 
   window.isSignUp = false;
@@ -613,14 +625,40 @@ body.chat-open .bottom-nav{display:none}
     else { status.textContent='Toque para permitir notificações.'; btn.textContent='🔔 Ativar notificações'; }
   }
 
+  async function loadMessaging(){
+    if(messaging && messagingGetToken) return;
+    if(!('Notification' in window) || !('serviceWorker' in navigator)) {
+      throw new Error('Este navegador não oferece notificações push.');
+    }
+    const mod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js");
+    messaging = mod.getMessaging(app);
+    messagingGetToken = mod.getToken;
+    messagingOnMessage = mod.onMessage;
+    if(messagingOnMessage){
+      messagingOnMessage(messaging,(payload)=>{
+        console.log('Notificação recebida com o app aberto:',payload);
+        const title=payload.notification?.title || payload.data?.title || 'Nosso Cantinho ❤️';
+        const body=payload.notification?.body || payload.data?.body || 'Há uma novidade no Cantinho.';
+        toast(`🔔 ${title}: ${body}`);
+      });
+    }
+  }
+
   window.enableNotifications = async function(){
     try{
       if(VAPID_KEY.startsWith('COLE_')){ toast('Falta configurar a chave VAPID do Firebase.'); return; }
-      const permission = await Notification.requestPermission();
+      if(!auth.currentUser){ toast('Entre na conta antes de ativar as notificações.'); return; }
+      if(!('Notification' in window) || !('serviceWorker' in navigator)){
+        updateNotificationUI();
+        toast('Este navegador não oferece notificações push.');
+        return;
+      }
+      await loadMessaging();
+      const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
       if(permission !== 'granted'){ updateNotificationUI(); toast('Permissão de notificação não concedida.'); return; }
       const reg = window.__swRegistration || await navigator.serviceWorker.ready;
-      const token = await getToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
-      if(!token || !auth.currentUser) throw new Error('Não foi possível gerar o token de notificação.');
+      const token = await messagingGetToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+      if(!token) throw new Error('Não foi possível gerar o token de notificação.');
       await setDoc(doc(db,'users',auth.currentUser.uid),{
         nome:auth.currentUser.displayName||'Usuário',
         email:auth.currentUser.email||'',
@@ -629,15 +667,8 @@ body.chat-open .bottom-nav{display:none}
       },{merge:true});
       updateNotificationUI();
       toast('🔔 Notificações ativadas!');
-    }catch(e){ console.error('FCM:',e); toast('Não foi possível ativar as notificações.'); }
+    }catch(e){ console.error('FCM:',e); updateNotificationUI(); toast('Não foi possível ativar as notificações. Veja o console para o detalhe.'); }
   };
-
-  onMessage(messaging,(payload)=>{
-    console.log('Notificação recebida com o app aberto:',payload);
-    const title=payload.notification?.title || payload.data?.title || 'Nosso Cantinho ❤️';
-    const body=payload.notification?.body || payload.data?.body || 'Há uma novidade no Cantinho.';
-    toast(`🔔 ${title}: ${body}`);
-  });
 
   window.logout = function() {
     signOut(auth).then(() => toast('Sessão encerrada.'));
