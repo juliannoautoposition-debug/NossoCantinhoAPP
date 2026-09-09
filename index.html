@@ -518,7 +518,7 @@ body.chat-open .bottom-nav{display:none}
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
   // Firebase Messaging é carregado somente quando o usuário ativa as notificações.
   // Isso evita que um navegador sem suporte a Push impeça o restante do aplicativo de carregar.
   import { arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -535,7 +535,8 @@ body.chat-open .bottom-nav{display:none}
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  const storage = getStorage(app);
+  // Usa explicitamente o bucket padrão do projeto para evitar que o SDK aponte para um bucket incorreto.
+  const storage = getStorage(app, "gs://apprelacionamento-d0906.firebasestorage.app");
   const docRef = doc(db, "appData", "nossoCantinho");
   // Cole aqui a CHAVE PÚBLICA VAPID gerada no Firebase Console > Configurações > Cloud Messaging.
   const VAPID_KEY = "BC-efcnJnCIpVbFvTbKtqcP9-TGbuouO2ZC1XAuxxyqw00Ytx7kvXYVCdwzy-LDBTWS2ifLgJtB6Y30eCHh4jiz0";
@@ -727,7 +728,7 @@ body.chat-open .bottom-nav{display:none}
     } finally { URL.revokeObjectURL(url); }
   }
 
-  async function uploadChatFile(file, user, kind='media') {
+  async function uploadChatFile(file, user, kind='media', onProgress=null) {
     if (!file) throw new Error('Nenhum arquivo selecionado.');
     if (!user) throw new Error('Usuário não autenticado.');
     let uploadFile = file;
@@ -737,17 +738,40 @@ body.chat-open .bottom-nav{display:none}
       ext = contentType.includes('mp4') ? 'm4a' : contentType.includes('ogg') ? 'ogg' : 'webm';
     }
     if (kind === 'image') {
-      uploadFile = await compressImage(file, 1800, 0.86);
+      uploadFile = await compressImage(file, 1800, 0.82);
       contentType = uploadFile.type || 'image/jpeg';
       ext = 'jpg';
     }
     const path = `chat_media/${Date.now()}_${user.uid}_${Math.random().toString(36).slice(2,8)}.${ext}`;
     const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, uploadFile, {
-      contentType,
-      cacheControl: 'public,max-age=31536000'
+    const metadata = { contentType, cacheControl: 'public,max-age=31536000' };
+    const task = uploadBytesResumable(storageRef, uploadFile, metadata);
+
+    await new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = (fn, value) => { if (!settled) { settled = true; clearTimeout(timer); fn(value); } };
+      const timer = setTimeout(() => finish(reject, new Error('O Firebase Storage demorou mais de 45 segundos. Verifique o plano Blaze, a conexão e as regras do Storage.')), 45000);
+      task.on('state_changed',
+        snap => {
+          const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
+          if (onProgress) onProgress(pct);
+        },
+        err => {
+          const code = err?.code || 'storage/unknown';
+          let msg = err?.message || 'Falha no upload.';
+          if (code === 'storage/unauthorized') msg = 'Storage recusou o upload. Verifique as Storage Rules.';
+          if (code === 'storage/unauthenticated') msg = 'Sua sessão expirou. Faça login novamente.';
+          if (code === 'storage/bucket-not-found') msg = 'O bucket do Firebase Storage não foi encontrado.';
+          if (code === 'storage/quota-exceeded') msg = 'O Firebase Storage está sem acesso à cota/plano. O projeto precisa estar no plano Blaze.';
+          if (String(msg).includes('402') || String(msg).includes('403')) msg += ' (HTTP 402/403: verifique o plano Blaze do Firebase Storage.)';
+          const e = new Error(msg); e.code = code;
+          finish(reject, e);
+        },
+        () => finish(resolve)
+      );
     });
-    return { url: await getDownloadURL(storageRef), contentType, ext };
+    const url = await getDownloadURL(storageRef);
+    return { url, contentType, ext };
   }
 
   window.handleImageSelect = function(e) {
@@ -826,7 +850,7 @@ body.chat-open .bottom-nav{display:none}
       if(btn){btn.disabled=true;btn.textContent='…';}
       const isAudio=mediaType==='audio';
       toast(isAudio?'Enviando áudio...':'Enviando foto...');
-      const result=await uploadChatFile(selectedFile,user,isAudio?'audio':'image');
+      const result=await uploadChatFile(selectedFile,user,isAudio?'audio':'image', pct => toast(`${isAudio?'Enviando áudio':'Enviando foto'} ${pct}%...`));
       await addDoc(collection(db,'mensagens'),{
         texto:'', mediaUrl:result.url, mediaType:isAudio?'audio':'image', mediaContentType:result.contentType,
         remetenteId:user.uid, remetenteNome:user.displayName||'Amor', data:serverTimestamp()
@@ -1264,10 +1288,10 @@ body.chat-open .bottom-nav{display:none}
       window.data.couple.date = document.getElementById('setDate').value;
       window.data.couple.message = document.getElementById('setMessage').value.trim();
       if (pendingCouplePhotoFile) {
-        toast('Enviando foto do casal...');
+        toast('Enviando foto do casal 0%...');
         const user=auth.currentUser;
         if(!user) throw new Error('Faça login novamente para salvar a foto.');
-        const result=await uploadChatFile(pendingCouplePhotoFile,user,'image');
+        const result=await uploadChatFile(pendingCouplePhotoFile,user,'image', pct => toast(`Enviando foto do casal ${pct}%...`));
         window.data.couple.photo=result.url;
         if(pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
         pendingCouplePhotoPreviewUrl='';
@@ -1287,6 +1311,21 @@ body.chat-open .bottom-nav{display:none}
     window.data.history.push({title, date, text}); clearIds('histTitle','histDate','histText'); save('Nova história', 'Um novo momento foi adicionado 💌'); toast('Momento adicionado!');
   };
 
+  // Diagnóstico rápido do Storage: o usuário verá o erro real em vez de ficar preso em "Enviando...".
+  window.testFirebaseStorage = async function(){
+    try{
+      const user=auth.currentUser;
+      if(!user) throw new Error('Faça login novamente.');
+      const testBlob=new Blob(['nosso-cantinho-storage-test'],{type:'text/plain'});
+      const result=await uploadChatFile(testBlob,user,'media',pct=>toast(`Testando Storage ${pct}%...`));
+      toast('✅ Firebase Storage funcionando.');
+      console.log('Storage OK:',result.url);
+    }catch(e){
+      console.error('Teste Storage:',e);
+      toast(`❌ Storage: ${e?.code||'erro'} — ${e?.message||'falha'}`);
+    }
+  };
+
   window.addPhoto = async function() {
     const caption = document.getElementById('photoCaption').value.trim(), url = document.getElementById('photoUrl').value.trim(), file = document.getElementById('photoFile').files[0];
     const user=auth.currentUser;
@@ -1295,8 +1334,8 @@ body.chat-open .bottom-nav{display:none}
       if(file) {
         if(!file.type.startsWith('image/')){toast('Escolha uma imagem válida.');return;}
         if(file.size>15*1024*1024){toast('A foto deve ter no máximo 15 MB.');return;}
-        toast('Enviando foto...');
-        const result=await uploadChatFile(file,user,'image');
+        toast('Enviando foto 0%...');
+        const result=await uploadChatFile(file,user,'image', pct => toast(`Enviando foto ${pct}%...`));
         window.data.photos.push({caption, src:result.url});
         clearIds('photoCaption','photoUrl','photoFile');
         await save('Nova foto', 'Uma nova foto foi adicionada 📸');
