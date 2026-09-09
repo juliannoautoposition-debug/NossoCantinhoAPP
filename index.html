@@ -1051,14 +1051,19 @@ body.chat-open .bottom-nav{display:none}
         changedAt: Date.now()
       };
       current._meta = current._meta || {};
-      current = await migrateDataUrlImages(current);
+      // Fotos da galeria são armazenadas no próprio Firestore como imagem comprimida.
+      // Não migrar `photos` para o Storage aqui.
+      if(current?.couple?.photo?.startsWith?.('data:')) {
+        // A foto do casal continua sem migração automática nesta versão.
+      }
       window.data = current;
       await setDoc(docRef, current);
       lastSyncedData = JSON.parse(JSON.stringify(current));
       renderAll();
     } catch(e) {
       console.error("Erro ao salvar no Firebase:", e);
-      toast('Não foi possível salvar.');
+      toast('Não foi possível salvar: '+(e?.message||'verifique as regras do Firestore.'));
+      throw e;
     }
   };
 
