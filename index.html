@@ -699,15 +699,69 @@ body.chat-open .bottom-nav{display:none}
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  // --- MÍDIAS E CHAT ---
-  window.handleImageSelect = function(e) {
-    const file = e.target.files[0];
-    if (file) {
-      selectedFile = file;
-      mediaType = 'image';
-      document.getElementById('previewText').textContent = `📷 Imagem: ${file.name}`;
-      document.getElementById('chatPreview').classList.remove('hidden');
+  // --- MÍDIAS E CHAT (versão corrigida) ---
+  let pendingCouplePhotoFile = null;
+  let pendingCouplePhotoPreviewUrl = '';
+
+  function safeFileName(name) {
+    return String(name || 'arquivo').replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  async function compressImage(file, maxSide=1600, quality=0.84) {
+    if (!file || !file.type.startsWith('image/')) return file;
+    if (file.size < 900 * 1024 && !/image\/heic|image\/heif/i.test(file.type)) return file;
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = url;
+      await new Promise((resolve, reject) => { img.onload=resolve; img.onerror=reject; });
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+      return blob || file;
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  async function uploadChatFile(file, user, kind='media') {
+    if (!file) throw new Error('Nenhum arquivo selecionado.');
+    if (!user) throw new Error('Usuário não autenticado.');
+    let uploadFile = file;
+    let contentType = file.type || 'application/octet-stream';
+    let ext = safeFileName(file.name || '').split('.').pop() || 'bin';
+    if (kind === 'audio') {
+      ext = contentType.includes('mp4') ? 'm4a' : contentType.includes('ogg') ? 'ogg' : 'webm';
     }
+    if (kind === 'image') {
+      uploadFile = await compressImage(file, 1800, 0.86);
+      contentType = uploadFile.type || 'image/jpeg';
+      ext = 'jpg';
+    }
+    const path = `chat_media/${Date.now()}_${user.uid}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, uploadFile, {
+      contentType,
+      cacheControl: 'public,max-age=31536000'
+    });
+    return { url: await getDownloadURL(storageRef), contentType, ext };
+  }
+
+  window.handleImageSelect = function(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); e.target.value=''; return; }
+    if (file.size > 15 * 1024 * 1024) { toast('A foto deve ter no máximo 15 MB.'); e.target.value=''; return; }
+    selectedFile = file;
+    mediaType = 'image';
+    recordingMimeType = '';
+    recordingExt = 'jpg';
+    document.getElementById('previewText').textContent = `📷 Imagem pronta: ${file.name}`;
+    const area=document.getElementById('audioPreviewArea'); if(area) area.classList.add('hidden');
+    document.getElementById('chatPreview').classList.remove('hidden');
   };
 
   let recordingStartedAt = 0;
@@ -718,7 +772,10 @@ body.chat-open .bottom-nav{display:none}
   let recordingExt = 'webm';
 
   function getAudioMime() {
-    const options=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'];
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const options = isSafari
+      ? ['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus']
+      : ['audio/webm;codecs=opus','audio/webm','audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/ogg;codecs=opus'];
     return window.MediaRecorder?.isTypeSupported ? (options.find(t=>MediaRecorder.isTypeSupported(t)) || '') : '';
   }
   function formatRecordTime(ms){const total=Math.floor(ms/1000);return Math.floor(total/60)+':'+String(total%60).padStart(2,'0');}
@@ -736,24 +793,53 @@ body.chat-open .bottom-nav{display:none}
     if(mediaRecorder?.state==='paused'){mediaRecorder.resume();box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();return;}
     try{
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-      recordingMimeType=getAudioMime();mediaRecorder=recordingMimeType?new MediaRecorder(stream,{mimeType:recordingMimeType}):new MediaRecorder(stream);recordingMimeType=mediaRecorder.mimeType||recordingMimeType||'audio/webm';recordingExt=recordingMimeType.includes('mp4')?'m4a':recordingMimeType.includes('ogg')?'ogg':'webm';audioChunks=[];recordingElapsedBeforePause=0;
+      recordingMimeType=getAudioMime();
+      mediaRecorder=recordingMimeType?new MediaRecorder(stream,{mimeType:recordingMimeType}):new MediaRecorder(stream);
+      recordingMimeType=mediaRecorder.mimeType||recordingMimeType||'audio/webm';
+      recordingExt=recordingMimeType.includes('mp4')?'m4a':recordingMimeType.includes('ogg')?'ogg':'webm';
+      audioChunks=[];recordingElapsedBeforePause=0;
       box?.classList.add('active');box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(time)time.textContent='0:00';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();
       mediaRecorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data);};
-      mediaRecorder.onerror=e=>{console.error(e);stream.getTracks().forEach(t=>t.stop());mediaRecorder=null;stopRecordingUI();toast('Erro ao gravar o áudio.');};
+      mediaRecorder.onerror=e=>{console.error('MediaRecorder:',e);stream.getTracks().forEach(t=>t.stop());mediaRecorder=null;stopRecordingUI();toast('Erro ao gravar o áudio.');};
       mediaRecorder.onstop=()=>{
-        stream.getTracks().forEach(t=>t.stop());const type=mediaRecorder?.mimeType||recordingMimeType||'audio/webm';const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';const blob=new Blob(audioChunks,{type});mediaRecorder=null;audioChunks=[];stopRecordingUI();
+        stream.getTracks().forEach(t=>t.stop());
+        const type=mediaRecorder?.mimeType||recordingMimeType||'audio/webm';
+        const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';
+        const blob=new Blob(audioChunks,{type});
+        mediaRecorder=null;audioChunks=[];stopRecordingUI();
         if(!blob.size){toast('Não foi possível criar o áudio.');return;}
-        selectedFile=blob;mediaType='audio';recordingMimeType=type;recordingExt=ext;resetAudioPreview();previewAudio=new Audio(URL.createObjectURL(blob));previewAudio.preload='metadata';previewAudio.onloadedmetadata=()=>{const d=isFinite(previewAudio.duration)?previewAudio.duration:0;document.getElementById('previewDuration').textContent=formatAudioDuration(d);};previewAudio.onended=()=>document.getElementById('previewPlayBtn').textContent='▶';
+        selectedFile=blob;mediaType='audio';recordingMimeType=type;recordingExt=ext;resetAudioPreview();
+        previewAudio=new Audio(URL.createObjectURL(blob));previewAudio.preload='metadata';
+        previewAudio.onloadedmetadata=()=>{const d=isFinite(previewAudio.duration)?previewAudio.duration:0;const el=document.getElementById('previewDuration');if(el)el.textContent=formatAudioDuration(d);};
+        previewAudio.onended=()=>{const b=document.getElementById('previewPlayBtn');if(b)b.textContent='▶';};
         document.getElementById('audioPreviewArea').classList.remove('hidden');document.getElementById('previewText').textContent='🎙️ Áudio pronto. Ouça antes de enviar.';document.getElementById('chatPreview').classList.remove('hidden');
       };
       mediaRecorder.start(250);
-    }catch(err){console.error(err);stopRecordingUI();toast(err?.name==='NotAllowedError'?'Permita o microfone no navegador.':'Não foi possível acessar o microfone.');}
+    }catch(err){console.error('Microfone:',err);stopRecordingUI();toast(err?.name==='NotAllowedError'?'Permita o microfone no navegador.':'Não foi possível acessar o microfone.');}
   };
+
   window.sendSelectedMedia=async function(){
-    if(!selectedFile)return;const user=auth.currentUser;if(!user){toast('Faça login novamente.');return;}const btn=document.getElementById('sendPreviewBtn');
-    try{if(btn){btn.disabled=true;btn.textContent='…';}toast('Enviando áudio...');const type=recordingMimeType||selectedFile.type||'audio/webm';const ext=recordingExt||'webm';const path=`chat_media/${Date.now()}_${user.uid}.${ext}`;const sr=ref(storage,path);await uploadBytes(sr,selectedFile,{contentType:type,cacheControl:'public,max-age=31536000'});const url=await getDownloadURL(sr);await addDoc(collection(db,'mensagens'),{texto:'',mediaUrl:url,mediaType:'audio',mediaContentType:type,remetenteId:user.uid,remetenteNome:user.displayName||'Amor',data:serverTimestamp()});cancelMediaUpload();toast('Áudio enviado!');}catch(err){console.error('Erro ao enviar áudio:',err);if(btn){btn.disabled=false;btn.textContent='➤';}toast('Não foi possível enviar o áudio.');}
+    if(!selectedFile)return;
+    const user=auth.currentUser;if(!user){toast('Faça login novamente.');return;}
+    const btn=document.getElementById('sendPreviewBtn');
+    try{
+      if(btn){btn.disabled=true;btn.textContent='…';}
+      const isAudio=mediaType==='audio';
+      toast(isAudio?'Enviando áudio...':'Enviando foto...');
+      const result=await uploadChatFile(selectedFile,user,isAudio?'audio':'image');
+      await addDoc(collection(db,'mensagens'),{
+        texto:'', mediaUrl:result.url, mediaType:isAudio?'audio':'image', mediaContentType:result.contentType,
+        remetenteId:user.uid, remetenteNome:user.displayName||'Amor', data:serverTimestamp()
+      });
+      cancelMediaUpload();
+      toast(isAudio?'Áudio enviado!':'Foto enviada!');
+    }catch(err){
+      console.error('Erro ao enviar mídia:',err);
+      if(btn){btn.disabled=false;btn.textContent='➤';}
+      toast('Não foi possível enviar a mídia: '+(err?.message||'erro desconhecido'));
+    }
   };
-  window.cancelMediaUpload=function(){resetAudioPreview();selectedFile=null;mediaType=null;recordingMimeType='';recordingExt='webm';const i=document.getElementById('chatImageInput');if(i)i.value='';document.getElementById('chatPreview')?.classList.add('hidden');document.getElementById('previewText').textContent='';};
+  window.cancelMediaUpload=function(){resetAudioPreview();selectedFile=null;mediaType=null;recordingMimeType='';recordingExt='webm';const i=document.getElementById('chatImageInput');if(i)i.value='';document.getElementById('chatPreview')?.classList.add('hidden');const t=document.getElementById('previewText');if(t)t.textContent='';};
 
   let activeChatAudio = null;
   let activeChatVoice = null;
@@ -857,10 +943,14 @@ body.chat-open .bottom-nav{display:none}
 
   document.getElementById("chatForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if(selectedFile && mediaType==='audio'){await sendSelectedMedia();return;}
+    if(selectedFile){await sendSelectedMedia();return;}
     const input=document.getElementById("chatInput"),texto=input.value.trim(),user=auth.currentUser;
-    if(!texto&&!selectedFile)return;
-    try{let mediaUrl="";if(selectedFile){toast("Enviando mídia...");const sr=ref(storage,`chat_media/${Date.now()}_${selectedFile.name}`);await uploadBytes(sr,selectedFile);mediaUrl=await getDownloadURL(sr);}await addDoc(collection(db,"mensagens"),{texto,mediaUrl,mediaType,remetenteId:user?.uid||"anonimo",remetenteNome:user?.displayName||"Anônimo",data:serverTimestamp()});input.value="";cancelMediaUpload();}catch(err){console.error(err);toast("Erro ao enviar mensagem.");}
+    if(!texto)return;
+    if(!user){toast('Faça login novamente.');return;}
+    try{
+      await addDoc(collection(db,"mensagens"),{texto,mediaUrl:"",mediaType:null,remetenteId:user.uid,remetenteNome:user.displayName||"Amor",data:serverTimestamp()});
+      input.value="";
+    }catch(err){console.error('Erro ao enviar mensagem:',err);toast("Erro ao enviar mensagem: "+(err?.message||''));}
   });
 
   window.editChatMessage = async function(msgId, currentText) {
@@ -900,10 +990,31 @@ body.chat-open .bottom-nav{display:none}
     return out;
   }
 
+  async function migrateDataUrlImages(current) {
+    const user=auth.currentUser;
+    if(!user) return current;
+    if(current?.couple?.photo?.startsWith?.('data:')) {
+      const blob=await fetch(current.couple.photo).then(r=>r.blob());
+      const result=await uploadChatFile(blob,user,'image');
+      current.couple.photo=result.url;
+    }
+    if(Array.isArray(current?.photos)) {
+      for(let i=0;i<current.photos.length;i++) {
+        const src=current.photos[i]?.src;
+        if(typeof src==='string' && src.startsWith('data:')) {
+          const blob=await fetch(src).then(r=>r.blob());
+          const result=await uploadChatFile(blob,user,'image');
+          current.photos[i].src=result.url;
+        }
+      }
+    }
+    return current;
+  }
+
   window.save = async function(customTitle, customBody) {
     try {
       const previous = lastSyncedData || {};
-      const current = JSON.parse(JSON.stringify(window.data));
+      let current = JSON.parse(JSON.stringify(window.data));
       let changedKey = Object.keys(current).find(k => JSON.stringify(current[k]) !== JSON.stringify(previous[k]));
       const labels = {couple:'Identidade do casal',history:'Nossa história',photos:'Nossas fotos',dates:'Datas importantes',plans:'Nossos planos',wishes:'Lista de desejos',today:'Ideias para hoje',challenges:'Desafios do casal',moods:'Check-in',letters:'Cartinhas',mural:'Mural',quiz:'Quiz'};
       const actor = auth.currentUser;
@@ -915,6 +1026,8 @@ body.chat-open .bottom-nav{display:none}
         changedKey: changedKey || '',
         changedAt: Date.now()
       };
+      current._meta = current._meta || {};
+      current = await migrateDataUrlImages(current);
       window.data = current;
       await setDoc(docRef, current);
       lastSyncedData = JSON.parse(JSON.stringify(current));
@@ -1114,24 +1227,27 @@ body.chat-open .bottom-nav{display:none}
   window.previewCouplePhoto = function(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem.'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast('A foto deve ter no máximo 5 MB.'); event.target.value=''; return; }
-    const r = new FileReader();
-    r.onload = () => {
-      window.data.couple.photo = r.result;
-      renderCouplePhotoPreview();
-      renderHome();
-    };
-    r.readAsDataURL(file);
+    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); event.target.value=''; return; }
+    if (file.size > 15 * 1024 * 1024) { toast('A foto deve ter no máximo 15 MB.'); event.target.value=''; return; }
+    if (pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
+    pendingCouplePhotoFile = file;
+    pendingCouplePhotoPreviewUrl = URL.createObjectURL(file);
+    renderCouplePhotoPreview();
+    const cp=document.getElementById('couplePhoto'), ph=document.getElementById('couplePhotoPlaceholder');
+    if(cp && ph){cp.src=pendingCouplePhotoPreviewUrl;cp.style.display='block';ph.style.display='none';}
   };
 
   function renderCouplePhotoPreview() {
     const box = document.getElementById('couplePhotoPreview');
     if (!box) return;
-    box.innerHTML = window.data.couple.photo ? `<img src="${esc(window.data.couple.photo)}" alt="Prévia da foto do casal">` : '<span>Nenhuma foto escolhida</span>';
+    const src = pendingCouplePhotoPreviewUrl || window.data.couple.photo || '';
+    box.innerHTML = src ? `<img src="${esc(src)}" alt="Prévia da foto do casal">` : '<span>Nenhuma foto escolhida</span>';
   }
 
   window.removeCouplePhoto = function() {
+    if (pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
+    pendingCouplePhotoPreviewUrl='';
+    pendingCouplePhotoFile=null;
     window.data.couple.photo = '';
     const input = document.getElementById('couplePhotoFile');
     if (input) input.value = '';
@@ -1140,14 +1256,29 @@ body.chat-open .bottom-nav{display:none}
     toast('Foto removida. Clique em salvar para confirmar.');
   };
 
-  window.saveCouple = function() {
-    window.data.couple.title = document.getElementById('setTitle').value.trim() || 'Nosso Cantinho';
-    window.data.couple.subtitle = document.getElementById('setSubtitle').value.trim();
-    window.data.couple.names = document.getElementById('setNames').value.trim() || 'Nosso amor';
-    window.data.couple.date = document.getElementById('setDate').value;
-    window.data.couple.message = document.getElementById('setMessage').value.trim();
-    save('Identidade do casal', 'A identidade do casal foi atualizada 💑');
-    toast('Personalização salva!');
+  window.saveCouple = async function() {
+    try {
+      window.data.couple.title = document.getElementById('setTitle').value.trim() || 'Nosso Cantinho';
+      window.data.couple.subtitle = document.getElementById('setSubtitle').value.trim();
+      window.data.couple.names = document.getElementById('setNames').value.trim() || 'Nosso amor';
+      window.data.couple.date = document.getElementById('setDate').value;
+      window.data.couple.message = document.getElementById('setMessage').value.trim();
+      if (pendingCouplePhotoFile) {
+        toast('Enviando foto do casal...');
+        const user=auth.currentUser;
+        if(!user) throw new Error('Faça login novamente para salvar a foto.');
+        const result=await uploadChatFile(pendingCouplePhotoFile,user,'image');
+        window.data.couple.photo=result.url;
+        if(pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
+        pendingCouplePhotoPreviewUrl='';
+        pendingCouplePhotoFile=null;
+      }
+      await save('Identidade do casal', 'A identidade do casal foi atualizada 💑');
+      toast('Personalização salva!');
+    } catch(e) {
+      console.error('Erro ao salvar casal:',e);
+      toast('Não foi possível salvar a personalização: '+(e?.message||'erro desconhecido'));
+    }
   };
 
   window.addHistory = function() {
@@ -1156,15 +1287,30 @@ body.chat-open .bottom-nav{display:none}
     window.data.history.push({title, date, text}); clearIds('histTitle','histDate','histText'); save('Nova história', 'Um novo momento foi adicionado 💌'); toast('Momento adicionado!');
   };
 
-  window.addPhoto = function() {
+  window.addPhoto = async function() {
     const caption = document.getElementById('photoCaption').value.trim(), url = document.getElementById('photoUrl').value.trim(), file = document.getElementById('photoFile').files[0];
-    if(file) {
-      const r = new FileReader();
-      r.onload = () => { window.data.photos.push({caption, src: r.result}); clearIds('photoCaption','photoUrl','photoFile'); save('Nova foto', 'Uma nova foto foi adicionada 📸'); toast('Foto adicionada!'); };
-      r.readAsDataURL(file);
-    } else if(url) {
-      window.data.photos.push({caption, src: url}); clearIds('photoCaption','photoUrl','photoFile'); save('Nova foto', 'Uma nova foto foi adicionada 📸'); toast('Foto adicionada!');
-    } else toast('Escolha uma imagem ou informe uma URL.');
+    const user=auth.currentUser;
+    if(!user){toast('Faça login novamente.');return;}
+    try {
+      if(file) {
+        if(!file.type.startsWith('image/')){toast('Escolha uma imagem válida.');return;}
+        if(file.size>15*1024*1024){toast('A foto deve ter no máximo 15 MB.');return;}
+        toast('Enviando foto...');
+        const result=await uploadChatFile(file,user,'image');
+        window.data.photos.push({caption, src:result.url});
+        clearIds('photoCaption','photoUrl','photoFile');
+        await save('Nova foto', 'Uma nova foto foi adicionada 📸');
+        toast('Foto salva! 📸');
+      } else if(url) {
+        window.data.photos.push({caption, src:url});
+        clearIds('photoCaption','photoUrl','photoFile');
+        await save('Nova foto', 'Uma nova foto foi adicionada 📸');
+        toast('Foto salva! 📸');
+      } else toast('Escolha uma imagem ou informe uma URL.');
+    } catch(err) {
+      console.error('Erro ao adicionar foto:',err);
+      toast('Não foi possível salvar a foto: '+(err?.message||'erro desconhecido'));
+    }
   };
 
   window.addDate = function() { const title=document.getElementById('dateTitle').value.trim(),when=document.getElementById('dateWhen').value,type=document.getElementById('dateType').value.trim(),note=document.getElementById('dateNote').value.trim();if(!title||!when){toast('Preencha nome e data.');return}window.data.dates.push({title,when,type,note});clearIds('dateTitle','dateWhen','dateType','dateNote');save();toast('Data adicionada!'); };
