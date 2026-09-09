@@ -1327,28 +1327,61 @@ body.chat-open .bottom-nav{display:none}
   };
 
   window.addPhoto = async function() {
-    const caption = document.getElementById('photoCaption').value.trim(), url = document.getElementById('photoUrl').value.trim(), file = document.getElementById('photoFile').files[0];
-    const user=auth.currentUser;
-    if(!user){toast('Faça login novamente.');return;}
+    const caption = document.getElementById('photoCaption').value.trim();
+    const url = document.getElementById('photoUrl').value.trim();
+    const file = document.getElementById('photoFile').files[0];
+    if(!auth.currentUser){ toast('Faça login novamente.'); return; }
+
     try {
       if(file) {
-        if(!file.type.startsWith('image/')){toast('Escolha uma imagem válida.');return;}
-        if(file.size>15*1024*1024){toast('A foto deve ter no máximo 15 MB.');return;}
-        toast('Enviando foto 0%...');
-        const result=await uploadChatFile(file,user,'image', pct => toast(`Enviando foto ${pct}%...`));
-        window.data.photos.push({caption, src:result.url});
+        if(!file.type.startsWith('image/')){ toast('Escolha uma imagem válida.'); return; }
+        if(file.size > 20 * 1024 * 1024){ toast('A foto deve ter no máximo 20 MB.'); return; }
+
+        // GALERIA: salva a foto comprimida diretamente no Firestore.
+        // Assim "Nossas fotos" não depende do Firebase Storage/Blaze e não fica presa em 0%.
+        toast('Preparando foto...');
+        const blob = await compressImage(file, 1200, 0.72);
+        if(!blob) throw new Error('Não foi possível preparar a imagem.');
+
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Falha ao ler a foto.'));
+          reader.readAsDataURL(blob);
+        });
+
+        // Evita ultrapassar o limite do documento do Firestore.
+        if(String(base64).length > 700000){
+          throw new Error('Essa foto ainda ficou grande demais. Escolha uma foto menor.');
+        }
+
+        toast('Salvando foto 100%...');
+        window.data.photos.push({caption, src:base64});
+        try {
+          await save('Nova foto', 'Uma nova foto foi adicionada 📸');
+        } catch(saveErr) {
+          // Se o documento ficar grande, desfaz a inclusão para não deixar o estado local inconsistente.
+          window.data.photos.pop();
+          throw saveErr;
+        }
         clearIds('photoCaption','photoUrl','photoFile');
-        await save('Nova foto', 'Uma nova foto foi adicionada 📸');
-        toast('Foto salva! 📸');
+        toast('Foto salva em Nossas fotos! 📸');
       } else if(url) {
         window.data.photos.push({caption, src:url});
+        try {
+          await save('Nova foto', 'Uma nova foto foi adicionada 📸');
+        } catch(saveErr) {
+          window.data.photos.pop();
+          throw saveErr;
+        }
         clearIds('photoCaption','photoUrl','photoFile');
-        await save('Nova foto', 'Uma nova foto foi adicionada 📸');
         toast('Foto salva! 📸');
-      } else toast('Escolha uma imagem ou informe uma URL.');
+      } else {
+        toast('Escolha uma imagem ou informe uma URL.');
+      }
     } catch(err) {
       console.error('Erro ao adicionar foto:',err);
-      toast('Não foi possível salvar a foto: '+(err?.message||'erro desconhecido'));
+      toast('Não foi possível salvar: '+(err?.message||'erro desconhecido'));
     }
   };
 
