@@ -516,12 +516,11 @@ body.chat-open .bottom-nav{display:none}
 <!-- FIREBASE E LÓGICA CORRIGIDA -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, runTransaction, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
   // Firebase Messaging é carregado somente quando o usuário ativa as notificações.
   // Isso evita que um navegador sem suporte a Push impeça o restante do aplicativo de carregar.
-  import { arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBk67E8baV-i1whhVTWzodyQNE48T8DPis",
@@ -544,6 +543,9 @@ body.chat-open .bottom-nav{display:none}
   let messagingGetToken = null;
   let messagingOnMessage = null;
   let lastSyncedData = null;
+  let unsubscribeDataSync = null;
+  let unsubscribeChat = null;
+  let savingQueue = Promise.resolve();
 
   window.isSignUp = false;
   let isInitialLoad = true;
@@ -679,10 +681,14 @@ body.chat-open .bottom-nav{display:none}
     const loginOverlay = document.getElementById('loginOverlay');
     if (user) {
       if (loginOverlay) loginOverlay.style.display = 'none';
-      initDataSync();
-      initChat();
+      if(unsubscribeDataSync) unsubscribeDataSync();
+      if(unsubscribeChat) unsubscribeChat();
+      unsubscribeDataSync = initDataSync();
+      unsubscribeChat = initChat();
       updateNotificationUI();
     } else {
+      if (unsubscribeDataSync) { unsubscribeDataSync(); unsubscribeDataSync=null; }
+      if (unsubscribeChat) { unsubscribeChat(); unsubscribeChat=null; }
       if (loginOverlay) loginOverlay.style.display = 'flex';
     }
   });
@@ -708,77 +714,85 @@ body.chat-open .bottom-nav{display:none}
     return String(name || 'arquivo').replace(/[^a-zA-Z0-9._-]/g, '_');
   }
 
-  async function compressImage(file, maxSide=1600, quality=0.84) {
+  async function compressImage(file, maxSide=1600, quality=0.82) {
     if (!file || !file.type.startsWith('image/')) return file;
-    if (file.size < 900 * 1024 && !/image\/heic|image\/heif/i.test(file.type)) return file;
     const url = URL.createObjectURL(file);
     try {
       const img = new Image();
       img.decoding = 'async';
       img.src = url;
-      await new Promise((resolve, reject) => { img.onload=resolve; img.onerror=reject; });
-      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-      canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
-      return blob || file;
+      await new Promise((resolve, reject) => { img.onload=resolve; img.onerror=()=>reject(new Error('Este formato de imagem não pôde ser lido pelo navegador.')); });
+      let side = Math.min(maxSide, 1800);
+      let q = quality;
+      let best = null;
+      // Não existe limite de tamanho para o usuário: a aplicação reduz automaticamente
+      // a imagem até caber com segurança em um documento do Firestore.
+      for(let attempt=0; attempt<8; attempt++) {
+        const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        const ctx = canvas.getContext('2d', {alpha:false});
+        if(!ctx) throw new Error('O navegador não conseguiu preparar a foto.');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', q));
+        if(!blob) throw new Error('Não foi possível comprimir a foto.');
+        best = blob;
+        const estimatedDataUrlLength = Math.ceil(blob.size * 1.37) + 100;
+        if(estimatedDataUrlLength <= 680000) break;
+        side = Math.max(700, Math.round(side * 0.82));
+        q = Math.max(0.48, q - 0.07);
+      }
+      return best || file;
     } finally { URL.revokeObjectURL(url); }
+  }
+
+  async function blobToDataUrl(blob) {
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=()=>reject(new Error('Falha ao preparar a mídia.'));
+      reader.readAsDataURL(blob);
+    });
   }
 
   async function uploadChatFile(file, user, kind='media', onProgress=null) {
     if (!file) throw new Error('Nenhum arquivo selecionado.');
     if (!user) throw new Error('Usuário não autenticado.');
-    let uploadFile = file;
-    let contentType = file.type || 'application/octet-stream';
-    let ext = safeFileName(file.name || '').split('.').pop() || 'bin';
-    if (kind === 'audio') {
-      ext = contentType.includes('mp4') ? 'm4a' : contentType.includes('ogg') ? 'ogg' : 'webm';
-    }
-    if (kind === 'image') {
-      uploadFile = await compressImage(file, 1800, 0.82);
-      contentType = uploadFile.type || 'image/jpeg';
-      ext = 'jpg';
-    }
-    const path = `chat_media/${Date.now()}_${user.uid}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-    const storageRef = ref(storage, path);
-    const metadata = { contentType, cacheControl: 'public,max-age=31536000' };
-    const task = uploadBytesResumable(storageRef, uploadFile, metadata);
 
-    await new Promise((resolve, reject) => {
-      let settled = false;
-      const finish = (fn, value) => { if (!settled) { settled = true; clearTimeout(timer); fn(value); } };
-      const timer = setTimeout(() => finish(reject, new Error('O Firebase Storage demorou mais de 45 segundos. Verifique o plano Blaze, a conexão e as regras do Storage.')), 45000);
-      task.on('state_changed',
-        snap => {
-          const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
-          if (onProgress) onProgress(pct);
-        },
-        err => {
-          const code = err?.code || 'storage/unknown';
-          let msg = err?.message || 'Falha no upload.';
-          if (code === 'storage/unauthorized') msg = 'Storage recusou o upload. Verifique as Storage Rules.';
-          if (code === 'storage/unauthenticated') msg = 'Sua sessão expirou. Faça login novamente.';
-          if (code === 'storage/bucket-not-found') msg = 'O bucket do Firebase Storage não foi encontrado.';
-          if (code === 'storage/quota-exceeded') msg = 'O Firebase Storage está sem acesso à cota/plano. O projeto precisa estar no plano Blaze.';
-          if (String(msg).includes('402') || String(msg).includes('403')) msg += ' (HTTP 402/403: verifique o plano Blaze do Firebase Storage.)';
-          const e = new Error(msg); e.code = code;
-          finish(reject, e);
-        },
-        () => finish(resolve)
-      );
-    });
-    const url = await getDownloadURL(storageRef);
-    return { url, contentType, ext };
+    let uploadFile=file;
+    let contentType=file.type || (kind==='audio' ? 'audio/webm' : 'image/jpeg');
+
+    if(kind==='image'){
+      if(onProgress) onProgress(5);
+      uploadFile=await compressImage(file,1800,0.82);
+      contentType='image/jpeg';
+      if(onProgress) onProgress(55);
+    } else if(kind==='audio'){
+      if(onProgress) onProgress(20);
+    }
+
+    const dataUrl=await blobToDataUrl(uploadFile);
+    if(onProgress) onProgress(90);
+
+    // O Firestore possui limite de ~1 MiB por documento. O app reduz fotos
+    // automaticamente; o usuário não precisa escolher um tamanho máximo.
+    if(String(dataUrl).length > 720000){
+      if(kind==='image'){
+        throw new Error('A foto é grande demais mesmo após a compressão automática. Tente outra imagem ou faça um recorte antes de enviar.');
+      }
+      throw new Error('O áudio ficou grande demais para esta mensagem. Grave um áudio mais curto.');
+    }
+    if(onProgress) onProgress(100);
+    return {url:dataUrl, contentType, ext:kind==='audio'?'webm':'jpg'};
   }
 
   window.handleImageSelect = function(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); e.target.value=''; return; }
-    if (file.size > 15 * 1024 * 1024) { toast('A foto deve ter no máximo 15 MB.'); e.target.value=''; return; }
     selectedFile = file;
     mediaType = 'image';
     recordingMimeType = '';
@@ -873,7 +887,7 @@ body.chat-open .bottom-nav{display:none}
     const chatContainer = document.getElementById("chatMessages");
     const chatQuery = query(collection(db, "mensagens"), orderBy("data", "asc"));
 
-    onSnapshot(chatQuery, (snapshot) => {
+    return onSnapshot(chatQuery, (snapshot) => {
       chatContainer.innerHTML = "";
       const currentUser = auth.currentUser;
       let lastDateStr = "";
@@ -962,6 +976,9 @@ body.chat-open .bottom-nav{display:none}
       });
 
       chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, (error) => {
+      console.error('Erro na sincronização do chat:', error);
+      toast('Não foi possível atualizar o chat em tempo real.');
     });
   }
 
@@ -993,16 +1010,25 @@ body.chat-open .bottom-nav{display:none}
   };
 
   function initDataSync() {
-    onSnapshot(docRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const incoming = snapshot.data();
-        window.data = merge(defaults, incoming);
-        lastSyncedData = JSON.parse(JSON.stringify(window.data));
-      } else {
-        lastSyncedData = JSON.parse(JSON.stringify(window.data));
-        save('configuração inicial', 'O Cantinho foi criado ❤️');
+    return onSnapshot(docRef, (snapshot) => {
+      try {
+        if (snapshot.exists()) {
+          const incoming = snapshot.data() || {};
+          window.data = merge(defaults, incoming);
+          lastSyncedData = JSON.parse(JSON.stringify(window.data));
+          renderAll();
+        } else {
+          window.data = JSON.parse(JSON.stringify(defaults));
+          lastSyncedData = JSON.parse(JSON.stringify(window.data));
+          save('configuração inicial', 'O Cantinho foi criado ❤️').catch(()=>{});
+        }
+      } catch (err) {
+        console.error('Erro ao sincronizar dados:', err);
+        toast('Erro ao atualizar o Cantinho.');
       }
-      renderAll();
+    }, (error) => {
+      console.error('Erro no listener do Firestore:', error);
+      toast('Não foi possível sincronizar o Cantinho em tempo real.');
     });
   }
 
@@ -1036,13 +1062,22 @@ body.chat-open .bottom-nav{display:none}
   }
 
   window.save = async function(customTitle, customBody) {
-    try {
+    // Serializa gravações para evitar dois cliques rápidos criando estados conflitantes.
+    savingQueue = savingQueue.then(async () => {
+      const localSnapshot = JSON.parse(JSON.stringify(window.data));
       const previous = lastSyncedData || {};
-      let current = JSON.parse(JSON.stringify(window.data));
-      let changedKey = Object.keys(current).find(k => JSON.stringify(current[k]) !== JSON.stringify(previous[k]));
-      const labels = {couple:'Identidade do casal',history:'Nossa história',photos:'Nossas fotos',dates:'Datas importantes',plans:'Nossos planos',wishes:'Lista de desejos',today:'Ideias para hoje',challenges:'Desafios do casal',moods:'Check-in',letters:'Cartinhas',mural:'Mural',quiz:'Quiz'};
+      const changedKey = Object.keys(localSnapshot).find(k =>
+        JSON.stringify(localSnapshot[k]) !== JSON.stringify(previous[k])
+      );
+
+      const labels = {
+        couple:'Identidade do casal',history:'Nossa história',photos:'Nossas fotos',
+        dates:'Datas importantes',plans:'Nossos planos',wishes:'Lista de desejos',
+        today:'Ideias para hoje',challenges:'Desafios do casal',moods:'Check-in',
+        letters:'Cartinhas',mural:'Mural',quiz:'Quiz',checkins:'Check-in'
+      };
       const actor = auth.currentUser;
-      current._meta = {
+      const meta = {
         actorUid: actor?.uid || '',
         actorName: actor?.displayName || 'Alguém',
         changeType: customTitle || labels[changedKey] || 'Atualização',
@@ -1050,21 +1085,31 @@ body.chat-open .bottom-nav{display:none}
         changedKey: changedKey || '',
         changedAt: Date.now()
       };
-      current._meta = current._meta || {};
-      // Fotos da galeria são armazenadas no próprio Firestore como imagem comprimida.
-      // Não migrar `photos` para o Storage aqui.
-      if(current?.couple?.photo?.startsWith?.('data:')) {
-        // A foto do casal continua sem migração automática nesta versão.
-      }
-      window.data = current;
-      await setDoc(docRef, current);
-      lastSyncedData = JSON.parse(JSON.stringify(current));
+
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(docRef);
+        const server = snap.exists() ? snap.data() : {};
+        const merged = { ...server };
+
+        // Grava somente o campo que mudou. Assim Lara não apaga uma alteração
+        // feita pelo outro celular em outro campo enquanto estava com uma cópia antiga.
+        if(changedKey) merged[changedKey] = localSnapshot[changedKey];
+        Object.keys(defaults).forEach(k => {
+          if(!(k in merged)) merged[k] = localSnapshot[k];
+        });
+        merged._meta = meta;
+        tx.set(docRef, merged);
+      });
+
+      // O listener onSnapshot é a fonte oficial e atualizará window.data.
+      // Não forçamos lastSyncedData aqui para não esconder alterações concorrentes.
       renderAll();
-    } catch(e) {
-      console.error("Erro ao salvar no Firebase:", e);
-      toast('Não foi possível salvar: '+(e?.message||'verifique as regras do Firestore.'));
+    }).catch(e => {
+      console.error('Erro ao salvar no Firebase:', e);
+      toast('Não foi possível salvar: '+(e?.message||'verifique sua conexão e as regras do Firestore.'));
       throw e;
-    }
+    });
+    return savingQueue;
   };
 
   window.esc = function(s) {
@@ -1257,7 +1302,6 @@ body.chat-open .bottom-nav{display:none}
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); event.target.value=''; return; }
-    if (file.size > 15 * 1024 * 1024) { toast('A foto deve ter no máximo 15 MB.'); event.target.value=''; return; }
     if (pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
     pendingCouplePhotoFile = file;
     pendingCouplePhotoPreviewUrl = URL.createObjectURL(file);
@@ -1335,55 +1379,49 @@ body.chat-open .bottom-nav{display:none}
     const caption = document.getElementById('photoCaption').value.trim();
     const url = document.getElementById('photoUrl').value.trim();
     const file = document.getElementById('photoFile').files[0];
-    if(!auth.currentUser){ toast('Faça login novamente.'); return; }
+    const user = auth.currentUser;
+    if(!user){ toast('Faça login novamente.'); return; }
 
     try {
+      let src = url;
       if(file) {
         if(!file.type.startsWith('image/')){ toast('Escolha uma imagem válida.'); return; }
-        if(file.size > 20 * 1024 * 1024){ toast('A foto deve ter no máximo 20 MB.'); return; }
-
-        // GALERIA: salva a foto comprimida diretamente no Firestore.
-        // Assim "Nossas fotos" não depende do Firebase Storage/Blaze e não fica presa em 0%.
         toast('Preparando foto...');
         const blob = await compressImage(file, 1200, 0.72);
-        if(!blob) throw new Error('Não foi possível preparar a imagem.');
-
-        const base64 = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(new Error('Falha ao ler a foto.'));
-          reader.readAsDataURL(blob);
-        });
-
-        // Evita ultrapassar o limite do documento do Firestore.
-        if(String(base64).length > 700000){
-          throw new Error('Essa foto ainda ficou grande demais. Escolha uma foto menor.');
-        }
-
-        toast('Salvando foto 100%...');
-        window.data.photos.push({caption, src:base64});
-        try {
-          await save('Nova foto', 'Uma nova foto foi adicionada 📸');
-        } catch(saveErr) {
-          // Se o documento ficar grande, desfaz a inclusão para não deixar o estado local inconsistente.
-          window.data.photos.pop();
-          throw saveErr;
-        }
-        clearIds('photoCaption','photoUrl','photoFile');
-        toast('Foto salva em Nossas fotos! 📸');
-      } else if(url) {
-        window.data.photos.push({caption, src:url});
-        try {
-          await save('Nova foto', 'Uma nova foto foi adicionada 📸');
-        } catch(saveErr) {
-          window.data.photos.pop();
-          throw saveErr;
-        }
-        clearIds('photoCaption','photoUrl','photoFile');
-        toast('Foto salva! 📸');
-      } else {
-        toast('Escolha uma imagem ou informe uma URL.');
+        const base64 = await blobToDataUrl(blob);
+        if(String(base64).length > 700000) throw new Error('Essa foto ainda ficou grande demais. Escolha uma foto menor.');
+        src = base64;
       }
+      if(!src){ toast('Escolha uma imagem ou informe uma URL.'); return; }
+
+      toast('Salvando foto...');
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(docRef);
+        const server = snap.exists() ? snap.data() : {};
+        const photos = Array.isArray(server.photos) ? [...server.photos] : [];
+        photos.push({
+          id: `${Date.now()}_${user.uid}_${Math.random().toString(36).slice(2,7)}`,
+          caption, src,
+          createdAt: Date.now(),
+          createdBy: user.uid,
+          createdByName: user.displayName || 'Alguém'
+        });
+        tx.set(docRef, {
+          ...server,
+          photos,
+          _meta: {
+            actorUid:user.uid,
+            actorName:user.displayName||'Alguém',
+            changeType:'Nova foto',
+            changeBody:'Uma nova foto foi adicionada 📸',
+            changedKey:'photos',
+            changedAt:Date.now()
+          }
+        });
+      });
+
+      clearIds('photoCaption','photoUrl','photoFile');
+      toast('Foto salva em Nossas fotos! 📸');
     } catch(err) {
       console.error('Erro ao adicionar foto:',err);
       toast('Não foi possível salvar: '+(err?.message||'erro desconhecido'));
