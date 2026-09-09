@@ -12,6 +12,9 @@
 <meta name="apple-mobile-web-app-title" content="Nosso Cantinho">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1077/1077035.png">
 
+<!-- Biblioteca para carregar todos os emojis do teclado -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+
 <title>Nosso Cantinho ❤️</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
@@ -35,7 +38,62 @@ input,textarea,select{width:100%;background:#101014;color:#fff;border:1px solid 
 .item{padding:14px 0;border-bottom:1px solid #2b2b31}.item:last-child{border-bottom:0}.item-title{font-weight:800}.item-meta{font-size:12px;color:#999;margin-top:5px}.item-actions{display:flex;gap:7px;margin-top:10px}.item-actions button{font-size:12px;padding:8px 10px}
 .tag{display:inline-block;background:#29292f;border:1px solid #383840;border-radius:999px;padding:4px 8px;font-size:11px;margin:2px;color:#ddd}
 .timeline{border-left:2px solid #555;padding-left:18px}.event{position:relative;margin-bottom:20px}.event:before{content:"";position:absolute;left:-25px;top:3px;width:10px;height:10px;border-radius:50%;background:#fff}.event h3{font-size:15px}.event p{font-size:13px;color:#aaa;margin-top:5px;line-height:1.5}
-.photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.photo{min-height:145px;border-radius:16px;background:#151519;border:1px solid #303037;padding:12px;overflow:hidden}.photo img{width:100%;height:115px;object-fit:cover;border-radius:12px}.photo .caption{font-size:12px;color:#aaa;margin-top:7px}
+
+/* Grid de Fotos com Alinhamento Simétrico e Perfeito */
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.photo{
+  border-radius:16px; background:#151519; border:1px solid #303037; padding:12px;
+  overflow:visible; position:relative; display:flex; flex-direction:column; justify-content:space-between;
+}
+.photo img{width:100%;height:115px;object-fit:cover;border-radius:12px;flex-shrink:0}
+.photo .caption{font-size:12px;color:#aaa;margin-top:7px;flex-grow:1}
+
+/* Estilos de Reações nas Fotos (Acima e dentro da tela) */
+.photo-reaction-wrap { position: relative; display: inline-block; touch-action: none; }
+.react-btn {
+  background: #1c1c22; border: 1px solid #2e2e38; color: #8e8e93; cursor: pointer;
+  width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 16px; transition: transform 0.15s ease, background-color 0.15s ease; padding: 0;
+}
+.react-btn:active { transform: scale(0.85); }
+.react-btn.active { background: rgba(255, 255, 255, 0.08); border-color: #444452; color: #fff; }
+
+.reaction-picker {
+  position: absolute; bottom: calc(100% + 8px); background: #1c1c22; border: 1px solid #33333e;
+  border-radius: 30px; padding: 6px 12px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6); opacity: 0; pointer-events: none;
+  transform: translateY(8px) scale(0.85); transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100; white-space: nowrap;
+}
+.photo-picker-left { left: 0; }
+.photo-picker-right { right: 0; }
+.reaction-picker.visible { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+.reaction-emoji { font-size: 24px; cursor: pointer; transition: transform 0.15s ease; display: inline-block; }
+.reaction-emoji.hovered { transform: scale(1.6) translateY(-6px); }
+
+.add-btn {
+  width: 26px; height: 26px; background: #2a2a35; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; color: #aaa; font-size: 16px; font-weight: bold;
+  cursor: pointer; transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.add-btn.hovered { transform: scale(1.4); background: #4a4a5a; color: #fff; }
+
+/* Modal de Emojis Completo */
+.emoji-modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 1000;
+}
+.emoji-modal-backdrop.active { opacity: 1; pointer-events: auto; }
+.emoji-modal {
+  background: #1c1c22; border: 1px solid #33333e; border-radius: 20px; padding: 12px;
+  width: 320px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8); transform: scale(0.9); transition: transform 0.2s ease;
+}
+.emoji-modal-backdrop.active .emoji-modal { transform: scale(1); }
+.emoji-modal-header { display: flex; justify-content: space-between; align-items: center; color: #8e8e93; font-size: 13px; margin-bottom: 8px; padding: 0 6px; }
+.emoji-modal-close { cursor: pointer; font-size: 16px; color: #aaa; }
+emoji-picker { width: 100%; height: 320px; --num-columns: 8; --emoji-size: 1.3rem; --background: #1c1c22; --border-color: transparent; }
+
 .today-panel{text-align:center;padding:24px 18px}.today-icon{font-size:42px;margin-bottom:10px}.today-panel h3{font-size:20px}.today-btn{width:100%;margin-top:16px;font-size:15px}.today-result{margin-top:18px;min-height:100px;border:1px dashed #45454e;border-radius:18px;background:#101014;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center}.result-emoji{font-size:34px;margin-bottom:7px}.result-text{font-size:18px;font-weight:800}
 .mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mood-btn{background:#101014;color:#fff;border:1px solid #34343c;border-radius:16px;padding:15px 10px;cursor:pointer;text-align:center}.mood-btn.selected{border-color:#fff;background:#29292f}.mood-emoji{font-size:25px}.mood-label{font-size:12px;color:#aaa;margin-top:6px}
 .desire{display:flex;gap:10px;align-items:flex-start;padding:13px 0;border-bottom:1px solid #2b2b31}.desire:last-child{border-bottom:0}.desire-main{flex:1}.desire-title{font-weight:700}.stars{letter-spacing:2px;font-size:12px}.check{width:19px;height:19px;margin:2px 0}.heart-btn{background:none;border:0;color:#fff;font-size:20px;cursor:pointer}
@@ -46,92 +104,64 @@ input,textarea,select{width:100%;background:#101014;color:#fff;border:1px solid 
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .quick-edit{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.quick-edit button{font-size:11px;padding:7px 9px}.hidden{display:none!important}
 
-/* CHAT — visual inspirado em WhatsApp/TikTok */
-#chat.page.active{
-  position:fixed;
-  inset:0;
-  width:min(100vw,480px);
-  height:100dvh;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:35;
-  padding:0;
-  background:#0b0b0f;
-  overflow:hidden;
-}
-#chat.page.active ~ *{}
+/* CHAT E AUDIO - Layout Estilo WhatsApp Moderno e Fluido */
+#chat.page.active{ position:fixed; inset:0; width:min(100vw,480px); height:100dvh; left:50%; transform:translateX(-50%); z-index:35; padding:0; background:#0b0b0f; overflow:hidden; }
 body.chat-open{overflow:hidden}
 body.chat-open #topHeader{display:none}
 body.chat-open .bottom-nav{display:none}
-.chat-container{
-  height:100%; width:100%; max-height:none;
-  display:flex; flex-direction:column;
-  background:#0b0b0f;
-  border:0; border-radius:0; overflow:hidden;
-  box-shadow:none;
-}
-.chat-topbar{
-  flex:0 0 auto; height:64px; display:flex; align-items:center; gap:10px;
-  padding:8px 12px; background:#15151a; border-bottom:1px solid #292930;
-  box-shadow:0 2px 12px rgba(0,0,0,.28); z-index:3;
-}
+.chat-container{ height:100%; width:100%; max-height:none; display:flex; flex-direction:column; background:#0b0b0f; border:0; border-radius:0; overflow:hidden; }
+.chat-topbar{ flex:0 0 auto; height:64px; display:flex; align-items:center; gap:10px; padding:8px 12px; background:#15151a; border-bottom:1px solid #292930; z-index:3; }
 .chat-topbar .back{width:42px;height:42px;border-radius:50%;background:#25252b;font-size:27px;line-height:1}
 .chat-top-info{min-width:0;display:flex;flex-direction:column;gap:2px}
 .chat-top-title{font-size:16px;font-weight:800;color:#fff}
 .chat-top-status{font-size:11px;color:#8f8f99}
-.chat-messages{
-  flex:1; min-height:0; padding:14px 11px 12px;
-  overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
-  display:flex; flex-direction:column; gap:7px; scroll-behavior:smooth;
-  background:radial-gradient(circle at 50% -10%,#1a1a20 0,#0b0b0f 48%);
-}
-.chat-date-divider{
-  align-self:center; background:#202027; color:#a6a6af; font-size:10px; font-weight:700;
-  padding:5px 11px; border-radius:999px; margin:9px 0; border:1px solid #303039;
-  box-shadow:0 2px 8px rgba(0,0,0,.2)
-}
-.chat-msg{
-  max-width:82%; padding:8px 10px 6px; border-radius:16px; font-size:14px; line-height:1.42;
-  word-break:break-word; position:relative; box-shadow:0 1px 2px rgba(0,0,0,.24)
-}
+.chat-messages{ flex:1; min-height:0; padding:14px 11px 12px; overflow-y:auto; -webkit-overflow-scrolling:touch; display:flex; flex-direction:column; gap:7px; scroll-behavior:smooth; background:radial-gradient(circle at 50% -10%,#1a1a20 0,#0b0b0f 48%); }
+.chat-date-divider{ align-self:center; background:#202027; color:#a6a6af; font-size:10px; font-weight:700; padding:5px 11px; border-radius:999px; margin:9px 0; border:1px solid #303039; }
+.chat-msg{ max-width:82%; padding:8px 10px 6px; border-radius:16px; font-size:14px; line-height:1.42; word-break:break-word; position:relative; box-shadow:0 1px 2px rgba(0,0,0,.24) }
 .chat-msg.mine{align-self:flex-end;background:#25252d;color:#fff;border-bottom-right-radius:5px;border:1px solid #353541}
 .chat-msg.other{align-self:flex-start;background:#17171d;color:#eee;border-bottom-left-radius:5px;border:1px solid #292930}
 .chat-msg-sender{font-size:10px;font-weight:800;color:#b1b1ba;margin-bottom:3px}
 .chat-msg-time{font-size:9px;color:#85858e;text-align:right;margin-top:3px}
 .msg-actions{display:flex;gap:8px;font-size:9px;margin-top:2px;color:#a9a9b1;justify-content:flex-end}
-.msg-actions span{cursor:pointer;opacity:.72;text-decoration:none}
-.chat-composer-wrap{flex:0 0 auto;background:#15151a;border-top:1px solid #292930;padding:7px 8px max(8px,env(safe-area-inset-bottom));z-index:4}
+.msg-actions span{cursor:pointer;opacity:.72}
+
+.chat-composer-wrap{flex:0 0 auto;background:#15151a;border-top:1px solid #292930;padding:8px 10px max(10px,env(safe-area-inset-bottom));z-index:4}
 .chat-form{display:flex;gap:6px;align-items:flex-end;padding:0;background:transparent;border:0}
 .chat-form input[type="text"]{margin:0;min-width:0;height:42px;border-radius:22px;background:#0f0f14;padding:10px 14px;flex:1;border-color:#303039}
-.chat-btn-action{border-radius:50%;width:42px;height:42px;padding:0;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 42px;cursor:pointer;border:0;margin:0;transition:transform .15s,background .15s}
-.chat-btn-action:active{transform:scale(.92)}
+.chat-btn-action{border-radius:50%;width:42px;height:42px;padding:0;display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 42px;cursor:pointer;border:0;margin:0}
 .chat-send-btn{background:#fff;color:#111}
-.chat-mic-btn{background:#292930;color:#fff;position:relative;overflow:visible}
-.chat-mic-btn.recording{background:#b32635;animation:micPulse 1.1s infinite;box-shadow:0 0 0 0 rgba(179,38,53,.55)}
+.chat-mic-btn{background:#292930;color:#fff;position:relative}
+.chat-mic-btn.recording{background:#b32635;animation:micPulse 1.1s infinite}
 @keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(179,38,53,.5)}70%{box-shadow:0 0 0 11px rgba(179,38,53,0)}100%{box-shadow:0 0 0 0 rgba(179,38,53,0)}}
-.chat-recording{display:none;align-items:center;gap:10px;margin-bottom:7px;padding:8px 12px;border:1px solid #34343d;border-radius:16px;background:#101015}
+
+/* Nova Cápsula de Gravação Integrada (Estilo WhatsApp) */
+.chat-recording{display:none;align-items:center;gap:10px;margin-bottom:0;padding:6px 12px;border:1px solid #363642;border-radius:22px;background:#1c1c24;width:100%;height:42px}
 .chat-recording.active{display:flex}
 .record-dot{width:9px;height:9px;border-radius:50%;background:#ff3b4e;animation:recordBlink 1s infinite}
 @keyframes recordBlink{50%{opacity:.25}}
-.record-time{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;min-width:40px}
+.record-time{font-variant-numeric:tabular-nums;font-size:12px;font-weight:800;min-width:38px;color:#fff}
 .record-label{font-size:12px;color:#aaa;flex:1}
 .record-wave{display:flex;gap:2px;align-items:center;height:20px}
 .record-wave i{display:block;width:3px;border-radius:4px;background:#ddd;animation:wave 650ms ease-in-out infinite alternate}
 .record-wave i:nth-child(1){height:7px}.record-wave i:nth-child(2){height:14px;animation-delay:-.2s}.record-wave i:nth-child(3){height:19px;animation-delay:-.4s}.record-wave i:nth-child(4){height:11px;animation-delay:-.1s}.record-wave i:nth-child(5){height:16px;animation-delay:-.3s}
 @keyframes wave{to{transform:scaleY(.45);opacity:.55}}
+.record-cancel{background:transparent;border:none;color:#ff5c5c;font-size:16px;cursor:pointer;padding:4px}
+.record-finish{background:#fff;color:#111;border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;font-weight:bold;flex:0 0 32px;padding:0}
+
 .chat-preview{padding:7px 10px!important;margin-bottom:7px;border:1px solid #303039;border-radius:13px!important;background:#101015!important;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.chat-preview .btn{padding:5px 9px;font-size:11px;margin:0}
-.preview-actions{display:flex;gap:6px;flex:0 0 auto}.audio-preview-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.audio-preview-area .voice-wave{min-width:75px}.preview-wave i{height:7px!important}.preview-wave i:nth-child(2){height:16px!important}.preview-wave i:nth-child(3){height:11px!important}.preview-wave i:nth-child(4){height:20px!important}.preview-wave i:nth-child(5){height:9px!important}.preview-wave i:nth-child(6){height:15px!important}.preview-wave i:nth-child(7){height:21px!important}.preview-wave i:nth-child(8){height:12px!important}.preview-wave i:nth-child(9){height:18px!important}.preview-wave i:nth-child(10){height:8px!important}.record-finish{flex:0 0 auto!important;padding:6px 9px!important}.chat-recording.paused .record-dot{animation:none;opacity:.5}.chat-recording.paused .record-wave i{animation-play-state:paused}
+.preview-actions{display:flex;gap:6px;flex:0 0 auto}.audio-preview-area{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .chat-img-media{width:100%;max-height:240px;object-fit:cover;border-radius:12px;margin-top:5px;cursor:pointer;border:1px solid rgba(255,255,255,.08)}
+
+/* Player de Áudio */
 .voice-player{display:flex;align-items:center;gap:9px;min-width:190px;padding:2px 0}
 .voice-play{width:38px;height:38px;border-radius:50%;border:0;background:#fff;color:#111;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex:0 0 38px}
 .voice-wave{height:30px;display:flex;align-items:center;gap:2px;flex:1;overflow:hidden}
 .voice-wave i{width:3px;border-radius:3px;background:#888;display:block;min-height:5px;max-height:23px;opacity:.8}
 .voice-player.playing .voice-wave i{animation:voiceBars .72s ease-in-out infinite alternate}
-.voice-player.playing .voice-wave i:nth-child(2n){animation-delay:-.25s}.voice-player.playing .voice-wave i:nth-child(3n){animation-delay:-.48s}
+.voice-player.playing .voice-wave i:nth-child(2n){animation-delay:-.25s}
+.voice-player.playing .voice-wave i:nth-child(3n){animation-delay:-.48s}
 @keyframes voiceBars{to{transform:scaleY(.35)}}
 .voice-duration{font-size:10px;color:#999;min-width:31px;text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:480px){.chat-msg{max-width:86%}.chat-messages{padding-left:8px;padding-right:8px}}
 
 /* Lightbox */
 .photo img{cursor:zoom-in;transition:transform .2s}
@@ -205,7 +235,7 @@ body.chat-open .bottom-nav{display:none}
   <div class="message"><div class="message-title">💖 Recadinho</div><p id="homeMessage">Personalize este espaço em Configurações.</p></div>
 </section>
 
-<!-- CHAT COM ROLAGEM E HORÁRIOS -->
+<!-- CHAT COM ÁUDIO ESTILO WHATSAPP, EDIÇÃO E EXCLUSÃO -->
 <section id="chat" class="page">
   <div class="chat-container">
     <div class="chat-topbar">
@@ -217,12 +247,6 @@ body.chat-open .bottom-nav{display:none}
     </div>
     <div id="chatMessages" class="chat-messages"></div>
     <div class="chat-composer-wrap">
-      <div id="chatRecording" class="chat-recording">
-        <span class="record-dot"></span><span id="recordTime" class="record-time">0:00</span>
-        <span id="recordLabel" class="record-label">Gravando áudio</span>
-        <span class="record-wave"><i></i><i></i><i></i><i></i><i></i></span>
-        <button type="button" class="btn secondary record-finish" onclick="finishAudioRecording()">✓ Pronto</button>
-      </div>
       <div id="chatPreview" class="chat-preview hidden">
         <div id="audioPreviewArea" class="audio-preview-area hidden">
           <button type="button" id="previewPlayBtn" class="voice-play" onclick="togglePreviewAudio()">▶</button>
@@ -236,6 +260,13 @@ body.chat-open .bottom-nav{display:none}
         </div>
       </div>
       <form id="chatForm" class="chat-form">
+        <div id="chatRecording" class="chat-recording">
+          <button type="button" class="record-cancel" onclick="cancelAudioRecording()" title="Cancelar">🗑️</button>
+          <span class="record-dot"></span>
+          <span id="recordTime" class="record-time">0:00</span>
+          <span class="record-wave"><i></i><i></i><i></i><i></i><i></i></span>
+          <button type="button" class="record-finish" onclick="finishAudioRecording()" title="Enviar áudio">✓</button>
+        </div>
         <label for="chatImageInput" class="btn secondary chat-btn-action" title="Anexar foto" aria-label="Anexar foto">📷</label>
         <input type="file" id="chatImageInput" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
         <input type="text" id="chatInput" placeholder="Mensagem" autocomplete="off">
@@ -251,6 +282,7 @@ body.chat-open .bottom-nav{display:none}
   <div class="panel" id="historyView"></div>
 </section>
 
+<!-- ABA DE FOTOS COM CARDS ALINHADOS E SIMÉTRICOS -->
 <section id="fotos" class="page">
   <div class="page-head"><button class="back" onclick="showPage('home')">‹</button><h2>📸 Nossas fotos</h2></div>
   <div class="panel"><div class="photos" id="photosView"></div></div>
@@ -446,6 +478,7 @@ body.chat-open .bottom-nav{display:none}
 </nav>
 <div id="toast" class="toast"></div>
 
+<!-- Lightbox de Fotos -->
 <div id="photoLightbox" class="photo-lightbox" onclick="closePhotoLightbox(event)">
   <button class="lb-close" aria-label="Fechar" onclick="closePhotoLightbox()">×</button>
   <button class="lb-prev" aria-label="Foto anterior" onclick="event.stopPropagation();changePhoto(-1)">‹</button>
@@ -453,6 +486,17 @@ body.chat-open .bottom-nav{display:none}
   <button class="lb-next" aria-label="Próxima foto" onclick="event.stopPropagation();changePhoto(1)">›</button>
   <div id="lightboxCounter" class="lb-counter"></div>
   <div id="lightboxCaption" class="lb-caption"></div>
+</div>
+
+<!-- Modal Global do Teclado Completo de Emojis para as Fotos -->
+<div class="emoji-modal-backdrop" id="emojiModalBackdrop" onclick="if(event.target===this) closePhotoModal()">
+  <div class="emoji-modal">
+    <div class="emoji-modal-header">
+      <span>Todos os Emojis</span>
+      <span class="emoji-modal-close" onclick="closePhotoModal()">✕</span>
+    </div>
+    <emoji-picker class="dark" id="fullEmojiPicker"></emoji-picker>
+  </div>
 </div>
 
 </div>
@@ -463,19 +507,17 @@ body.chat-open .bottom-nav{display:none}
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
       try {
-        // Remove um eventual SW antigo chamado sw.js que possa estar servindo cache de uma versão anterior.
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations.map(reg => {
           const url = reg.active?.scriptURL || reg.waiting?.scriptURL || reg.installing?.scriptURL || '';
           return /\/sw\.js(?:\?|$)/.test(url) ? reg.unregister() : Promise.resolve(false);
         }));
         window.__swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', {scope:'./'});
-        console.log('Service Worker PWA/FCM ativo:', window.__swRegistration.scope);
       } catch (e) { console.error('Falha no Service Worker:', e); }
     });
   }
 </script>
-<!-- CORREÇÃO ROBUSTA DO BOTÃO ENTRAR -->
+
 <script>
 (function(){
   function setupAuthButton(){
@@ -487,14 +529,12 @@ body.chat-open .bottom-nav{display:none}
       const old=btn.textContent;
       btn.textContent='Entrando...';
       try {
-        // O script principal do Firebase é type=module e pode terminar de carregar
-        // alguns instantes depois deste botão. Aguarda a função em vez de acusar erro.
         const started = Date.now();
         while(typeof window.handleAuth !== 'function' && Date.now() - started < 15000){
           await new Promise(r => setTimeout(r, 100));
         }
         if(typeof window.handleAuth !== 'function'){
-          throw new Error('O Firebase não carregou. Verifique sua internet e recarregue a página.');
+          throw new Error('O Firebase não carregou. Verifique sua internet.');
         }
         await window.handleAuth({preventDefault:function(){}});
       } catch(err) {
@@ -513,14 +553,12 @@ body.chat-open .bottom-nav{display:none}
 })();
 </script>
 
-<!-- FIREBASE E LÓGICA CORRIGIDA -->
+<!-- FIREBASE E LÓGICA DO APLICATIVO -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, runTransaction, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-  // Firebase Messaging é carregado somente quando o usuário ativa as notificações.
-  // Isso evita que um navegador sem suporte a Push impeça o restante do aplicativo de carregar.
+  import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBk67E8baV-i1whhVTWzodyQNE48T8DPis",
@@ -534,26 +572,22 @@ body.chat-open .bottom-nav{display:none}
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  // Usa explicitamente o bucket padrão do projeto para evitar que o SDK aponte para um bucket incorreto.
   const storage = getStorage(app, "gs://apprelacionamento-d0906.firebasestorage.app");
   const docRef = doc(db, "appData", "nossoCantinho");
-  // Cole aqui a CHAVE PÚBLICA VAPID gerada no Firebase Console > Configurações > Cloud Messaging.
   const VAPID_KEY = "BC-efcnJnCIpVbFvTbKtqcP9-TGbuouO2ZC1XAuxxyqw00Ytx7kvXYVCdwzy-LDBTWS2ifLgJtB6Y30eCHh4jiz0";
   let messaging = null;
-  let messagingGetToken = null;
-  let messagingOnMessage = null;
-  let lastSyncedData = null;
-  let unsubscribeDataSync = null;
-  let unsubscribeChat = null;
+  let lastSyncedData = null, unsubscribeDataSync = null, unsubscribeChat = null;
   let savingQueue = Promise.resolve();
 
   window.isSignUp = false;
-  let isInitialLoad = true;
+  let mediaRecorder = null, audioChunks = [], selectedFile = null, mediaType = null;
+  let activePhotoIndexForModal = null;
 
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let selectedFile = null;
-  let mediaType = null;
+  // Variáveis para reações de fotos (Press & Hold / Arraste)
+  let photoHoldTimer = null;
+  let photoIsDragging = false;
+  let photoCurrentHoveredItem = null;
+  let activePhotoReactIndex = null;
 
   const defaults = {
     couple:{title:'Nosso Cantinho',subtitle:'Um espaço só nosso.',names:'Nosso amor',date:'',message:'Personalize este espaço em Configurações.',photo:''},
@@ -568,7 +602,6 @@ body.chat-open .bottom-nav{display:none}
   window.desireFavorites = false;
   window.currentPhotoIndex = -1;
 
-  // --- CORREÇÃO DE AUTENTICAÇÃO ---
   window.toggleAuthMode = function() {
     window.isSignUp = !window.isSignUp;
     const nameInput = document.getElementById('authName');
@@ -595,10 +628,7 @@ body.chat-open .bottom-nav{display:none}
     const password = document.getElementById('authPassword').value;
     const name = document.getElementById('authName').value.trim();
 
-    if (!email || !password) {
-      toast('Preencha e-mail e senha.');
-      return;
-    }
+    if (!email || !password) { toast('Preencha e-mail e senha.'); return; }
 
     try {
       if (window.isSignUp) {
@@ -623,59 +653,27 @@ body.chat-open .bottom-nav{display:none}
     const btn=document.getElementById('enableNotificationsBtn');
     if(!status || !btn) return;
     if(!('Notification' in window) || !('serviceWorker' in navigator)){ status.textContent='Este navegador não oferece notificações push.'; btn.disabled=true; return; }
-    if(Notification.permission==='granted'){ status.textContent='✅ Notificações ativadas neste aparelho.'; btn.textContent='Notificações ativadas'; btn.disabled=false; }
-    else if(Notification.permission==='denied'){ status.textContent='🚫 Notificações bloqueadas. Ative-as nas configurações do navegador.'; btn.textContent='Notificações bloqueadas'; }
+    if(Notification.permission==='granted'){ status.textContent='✅ Notificações ativadas.'; btn.textContent='Notificações ativadas'; btn.disabled=false; }
     else { status.textContent='Toque para permitir notificações.'; btn.textContent='🔔 Ativar notificações'; }
-  }
-
-  async function loadMessaging(){
-    if(messaging && messagingGetToken) return;
-    if(!('Notification' in window) || !('serviceWorker' in navigator)) {
-      throw new Error('Este navegador não oferece notificações push.');
-    }
-    const mod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js");
-    messaging = mod.getMessaging(app);
-    messagingGetToken = mod.getToken;
-    messagingOnMessage = mod.onMessage;
-    if(messagingOnMessage){
-      messagingOnMessage(messaging,(payload)=>{
-        console.log('Notificação recebida com o app aberto:',payload);
-        const title=payload.notification?.title || payload.data?.title || 'Nosso Cantinho ❤️';
-        const body=payload.notification?.body || payload.data?.body || 'Há uma novidade no Cantinho.';
-        toast(`🔔 ${title}: ${body}`);
-      });
-    }
   }
 
   window.enableNotifications = async function(){
     try{
-      if(VAPID_KEY.startsWith('COLE_')){ toast('Falta configurar a chave VAPID do Firebase.'); return; }
-      if(!auth.currentUser){ toast('Entre na conta antes de ativar as notificações.'); return; }
-      if(!('Notification' in window) || !('serviceWorker' in navigator)){
-        updateNotificationUI();
-        toast('Este navegador não oferece notificações push.');
-        return;
-      }
-      await loadMessaging();
+      if(!auth.currentUser){ toast('Entre na conta antes de ativar.'); return; }
+      const mod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js");
+      messaging = mod.getMessaging(app);
       const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
-      if(permission !== 'granted'){ updateNotificationUI(); toast('Permissão de notificação não concedida.'); return; }
+      if(permission !== 'granted'){ updateNotificationUI(); toast('Permissão negada.'); return; }
       const reg = window.__swRegistration || await navigator.serviceWorker.ready;
-      const token = await messagingGetToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
-      if(!token) throw new Error('Não foi possível gerar o token de notificação.');
-      await setDoc(doc(db,'users',auth.currentUser.uid),{
-        nome:auth.currentUser.displayName||'Usuário',
-        email:auth.currentUser.email||'',
-        tokens:arrayUnion(token),
-        notificationUpdatedAt:Date.now()
-      },{merge:true});
+      const token = await mod.getToken(messaging,{vapidKey:VAPID_KEY,serviceWorkerRegistration:reg});
+      if(!token) throw new Error('Não foi possível gerar token.');
+      await setDoc(doc(db,'users',auth.currentUser.uid),{tokens:arrayUnion(token)},{merge:true});
       updateNotificationUI();
       toast('🔔 Notificações ativadas!');
-    }catch(e){ console.error('FCM:',e); updateNotificationUI(); toast('Não foi possível ativar as notificações. Veja o console para o detalhe.'); }
+    }catch(e){ console.error(e); toast('Erro ao ativar notificações.'); }
   };
 
-  window.logout = function() {
-    signOut(auth).then(() => toast('Sessão encerrada.'));
-  };
+  window.logout = function() { signOut(auth).then(() => toast('Sessão encerrada.')); };
 
   onAuthStateChanged(auth, (user) => {
     const loginOverlay = document.getElementById('loginOverlay');
@@ -693,7 +691,6 @@ body.chat-open .bottom-nav{display:none}
     }
   });
 
-  // --- FORMATADORES DE DATA/HORA PARA O CHAT ---
   function formatMsgTime(dateObj) {
     if (!dateObj) return '';
     const d = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
@@ -706,42 +703,25 @@ body.chat-open .bottom-nav{display:none}
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  // --- MÍDIAS E CHAT (versão corrigida) ---
-  let pendingCouplePhotoFile = null;
-  let pendingCouplePhotoPreviewUrl = '';
-
-  function safeFileName(name) {
-    return String(name || 'arquivo').replace(/[^a-zA-Z0-9._-]/g, '_');
-  }
-
   async function compressImage(file, maxSide=1600, quality=0.82) {
     if (!file || !file.type.startsWith('image/')) return file;
     const url = URL.createObjectURL(file);
     try {
       const img = new Image();
-      img.decoding = 'async';
       img.src = url;
-      await new Promise((resolve, reject) => { img.onload=resolve; img.onerror=()=>reject(new Error('Este formato de imagem não pôde ser lido pelo navegador.')); });
-      let side = Math.min(maxSide, 1800);
-      let q = quality;
-      let best = null;
-      // Não existe limite de tamanho para o usuário: a aplicação reduz automaticamente
-      // a imagem até caber com segurança em um documento do Firestore.
+      await new Promise((resolve, reject) => { img.onload=resolve; img.onerror=()=>reject(new Error('Erro ao ler imagem.')); });
+      let side = Math.min(maxSide, 1800), q = quality, best = null;
       for(let attempt=0; attempt<8; attempt++) {
         const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
         const canvas = document.createElement('canvas');
         canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
         canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
         const ctx = canvas.getContext('2d', {alpha:false});
-        if(!ctx) throw new Error('O navegador não conseguiu preparar a foto.');
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = '#fff'; ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', q));
-        if(!blob) throw new Error('Não foi possível comprimir a foto.');
         best = blob;
-        const estimatedDataUrlLength = Math.ceil(blob.size * 1.37) + 100;
-        if(estimatedDataUrlLength <= 680000) break;
+        if(Math.ceil(blob.size * 1.37) + 100 <= 680000) break;
         side = Math.max(700, Math.round(side * 0.82));
         q = Math.max(0.48, q - 0.07);
       }
@@ -753,213 +733,159 @@ body.chat-open .bottom-nav{display:none}
     return await new Promise((resolve,reject)=>{
       const reader=new FileReader();
       reader.onload=()=>resolve(reader.result);
-      reader.onerror=()=>reject(new Error('Falha ao preparar a mídia.'));
+      reader.onerror=()=>reject(new Error('Erro ao ler blob.'));
       reader.readAsDataURL(blob);
     });
   }
 
-  async function uploadChatFile(file, user, kind='media', onProgress=null) {
-    if (!file) throw new Error('Nenhum arquivo selecionado.');
-    if (!user) throw new Error('Usuário não autenticado.');
-
-    let uploadFile=file;
-    let contentType=file.type || (kind==='audio' ? 'audio/webm' : 'image/jpeg');
-
+  async function uploadChatFile(file, user, kind='media') {
+    let uploadFile = file, contentType = file.type || 'image/jpeg';
     if(kind==='image'){
-      if(onProgress) onProgress(5);
-      uploadFile=await compressImage(file,1800,0.82);
-      contentType='image/jpeg';
-      if(onProgress) onProgress(55);
-    } else if(kind==='audio'){
-      if(onProgress) onProgress(20);
+      uploadFile = await compressImage(file, 1800, 0.82);
+      contentType = 'image/jpeg';
     }
-
-    const dataUrl=await blobToDataUrl(uploadFile);
-    if(onProgress) onProgress(90);
-
-    // O Firestore possui limite de ~1 MiB por documento. O app reduz fotos
-    // automaticamente; o usuário não precisa escolher um tamanho máximo.
-    if(String(dataUrl).length > 720000){
-      if(kind==='image'){
-        throw new Error('A foto é grande demais mesmo após a compressão automática. Tente outra imagem ou faça um recorte antes de enviar.');
-      }
-      throw new Error('O áudio ficou grande demais para esta mensagem. Grave um áudio mais curto.');
-    }
-    if(onProgress) onProgress(100);
-    return {url:dataUrl, contentType, ext:kind==='audio'?'webm':'jpg'};
+    const dataUrl = await blobToDataUrl(uploadFile);
+    return {url: dataUrl, contentType, ext: kind==='audio'?'webm':'jpg'};
   }
 
   window.handleImageSelect = function(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); e.target.value=''; return; }
-    selectedFile = file;
-    mediaType = 'image';
-    recordingMimeType = '';
-    recordingExt = 'jpg';
+    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem.'); e.target.value=''; return; }
+    selectedFile = file; mediaType = 'image';
     document.getElementById('previewText').textContent = `📷 Imagem pronta: ${file.name}`;
-    const area=document.getElementById('audioPreviewArea'); if(area) area.classList.add('hidden');
+    document.getElementById('audioPreviewArea')?.classList.add('hidden');
     document.getElementById('chatPreview').classList.remove('hidden');
   };
 
-  let recordingStartedAt = 0;
-  let recordingElapsedBeforePause = 0;
-  let recordingTimer = null;
-  let previewAudio = null;
-  let recordingMimeType = '';
-  let recordingExt = 'webm';
-
+  let recordingStartedAt = 0, recordingElapsedBeforePause = 0, recordingTimer = null, previewAudio = null;
   function getAudioMime() {
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const options = isSafari
-      ? ['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus']
-      : ['audio/webm;codecs=opus','audio/webm','audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/ogg;codecs=opus'];
+    const options = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'];
     return window.MediaRecorder?.isTypeSupported ? (options.find(t=>MediaRecorder.isTypeSupported(t)) || '') : '';
   }
   function formatRecordTime(ms){const total=Math.floor(ms/1000);return Math.floor(total/60)+':'+String(total%60).padStart(2,'0');}
   function stopRecordingTimer(){if(recordingTimer)clearInterval(recordingTimer);recordingTimer=null;}
   function updateRecordingTimer(){const e=document.getElementById('recordTime');if(e)e.textContent=formatRecordTime(recordingElapsedBeforePause+(Date.now()-recordingStartedAt));}
   function startRecordingTimer(){stopRecordingTimer();recordingStartedAt=Date.now();recordingTimer=setInterval(updateRecordingTimer,250);}
-  function stopRecordingUI(){const b=document.getElementById('micBtn'),r=document.getElementById('chatRecording');b?.classList.remove('recording');if(b)b.textContent='🎙️';r?.classList.remove('active','paused');stopRecordingTimer();}
-  function resetAudioPreview(){if(previewAudio){previewAudio.pause();if(previewAudio.src?.startsWith('blob:'))URL.revokeObjectURL(previewAudio.src);previewAudio.src='';}previewAudio=null;document.getElementById('audioPreviewArea')?.classList.add('hidden');const b=document.getElementById('previewPlayBtn');if(b)b.textContent='▶';}
-  window.togglePreviewAudio=function(){if(!previewAudio)return;if(previewAudio.paused){previewAudio.play().then(()=>document.getElementById('previewPlayBtn').textContent='❚❚').catch(()=>toast('Não foi possível reproduzir o áudio.'));}else{previewAudio.pause();document.getElementById('previewPlayBtn').textContent='▶';}};
-  window.finishAudioRecording=function(){if(!mediaRecorder||!['recording','paused'].includes(mediaRecorder.state))return;stopRecordingTimer();if(mediaRecorder.state==='paused')mediaRecorder.resume();mediaRecorder.stop();};
-  window.toggleAudioRecording=async function(){
-    const mic=document.getElementById('micBtn'),box=document.getElementById('chatRecording'),label=document.getElementById('recordLabel'),time=document.getElementById('recordTime');
-    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast('Seu navegador não permite gravar áudio.');return;}
-    if(mediaRecorder?.state==='recording'){mediaRecorder.pause();recordingElapsedBeforePause+=Date.now()-recordingStartedAt;stopRecordingTimer();box?.classList.add('paused');if(label)label.textContent='Áudio pausado';if(mic){mic.textContent='▶';mic.classList.remove('recording');}return;}
-    if(mediaRecorder?.state==='paused'){mediaRecorder.resume();box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();return;}
+  
+  function stopRecordingUI(){
+    const mic=document.getElementById('micBtn'),r=document.getElementById('chatRecording'),inp=document.getElementById('chatInput'),imgLbl=document.querySelector('label[for="chatImageInput"]');
+    b_mic = mic;
+    if(mic){mic.textContent='🎙️';mic.classList.remove('recording');}
+    r?.classList.remove('active');
+    if(inp) inp.style.display='block';
+    if(imgLbl) imgLbl.style.display='flex';
+    stopRecordingTimer();
+  }
+  let b_mic = null;
+
+  window.toggleAudioRecording = async function(){
+    const mic=document.getElementById('micBtn'),box=document.getElementById('chatRecording'),time=document.getElementById('recordTime'),inp=document.getElementById('chatInput'),imgLbl=document.querySelector('label[for="chatImageInput"]');
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast('Sem suporte a áudio.');return;}
+    
+    if(mediaRecorder?.state==='recording'){
+      mediaRecorder.stop();
+      return;
+    }
+
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-      recordingMimeType=getAudioMime();
-      mediaRecorder=recordingMimeType?new MediaRecorder(stream,{mimeType:recordingMimeType}):new MediaRecorder(stream);
-      recordingMimeType=mediaRecorder.mimeType||recordingMimeType||'audio/webm';
-      recordingExt=recordingMimeType.includes('mp4')?'m4a':recordingMimeType.includes('ogg')?'ogg':'webm';
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const mime=getAudioMime();
+      mediaRecorder=mime?new MediaRecorder(stream,{mimeType:mime}):new MediaRecorder(stream);
       audioChunks=[];recordingElapsedBeforePause=0;
-      box?.classList.add('active');box?.classList.remove('paused');if(label)label.textContent='Gravando áudio';if(time)time.textContent='0:00';if(mic){mic.textContent='❚❚';mic.classList.add('recording');}startRecordingTimer();
+      
+      if(inp) inp.style.display='none';
+      if(imgLbl) imgLbl.style.display='none';
+      box?.classList.add('active');
+      if(time)time.textContent='0:00';
+      if(mic){mic.textContent='❚❚';mic.classList.add('recording');}
+      startRecordingTimer();
+
       mediaRecorder.ondataavailable=e=>{if(e.data?.size)audioChunks.push(e.data);};
-      mediaRecorder.onerror=e=>{console.error('MediaRecorder:',e);stream.getTracks().forEach(t=>t.stop());mediaRecorder=null;stopRecordingUI();toast('Erro ao gravar o áudio.');};
       mediaRecorder.onstop=()=>{
         stream.getTracks().forEach(t=>t.stop());
-        const type=mediaRecorder?.mimeType||recordingMimeType||'audio/webm';
-        const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';
-        const blob=new Blob(audioChunks,{type});
+        const blob=new Blob(audioChunks,{type:mediaRecorder?.mimeType||'audio/webm'});
         mediaRecorder=null;audioChunks=[];stopRecordingUI();
-        if(!blob.size){toast('Não foi possível criar o áudio.');return;}
-        selectedFile=blob;mediaType='audio';recordingMimeType=type;recordingExt=ext;resetAudioPreview();
-        previewAudio=new Audio(URL.createObjectURL(blob));previewAudio.preload='metadata';
-        previewAudio.onloadedmetadata=()=>{const d=isFinite(previewAudio.duration)?previewAudio.duration:0;const el=document.getElementById('previewDuration');if(el)el.textContent=formatAudioDuration(d);};
-        previewAudio.onended=()=>{const b=document.getElementById('previewPlayBtn');if(b)b.textContent='▶';};
-        document.getElementById('audioPreviewArea').classList.remove('hidden');document.getElementById('previewText').textContent='🎙️ Áudio pronto. Ouça antes de enviar.';document.getElementById('chatPreview').classList.remove('hidden');
+        if(!blob.size)return;
+        selectedFile=blob;mediaType='audio';
+        previewAudio=new Audio(URL.createObjectURL(blob));
+        document.getElementById('audioPreviewArea').classList.remove('hidden');
+        document.getElementById('previewText').textContent='🎙️ Áudio pronto.';
+        document.getElementById('chatPreview').classList.remove('hidden');
       };
       mediaRecorder.start(250);
-    }catch(err){console.error('Microfone:',err);stopRecordingUI();toast(err?.name==='NotAllowedError'?'Permita o microfone no navegador.':'Não foi possível acessar o microfone.');}
+    }catch(err){console.error(err);stopRecordingUI();toast('Erro ao acessar microfone.');}
   };
 
-  window.sendSelectedMedia=async function(){
+  window.finishAudioRecording = function(){if(mediaRecorder&&['recording','paused'].includes(mediaRecorder.state)){mediaRecorder.stop();}};
+  window.cancelAudioRecording = function(){if(mediaRecorder) { mediaRecorder.onstop = null; mediaRecorder.stop(); mediaRecorder=null; } stopRecordingUI(); toast('Gravação cancelada.');};
+  window.cancelMediaUpload = function(){selectedFile=null;mediaType=null;document.getElementById('chatPreview')?.classList.add('hidden');};
+
+  window.sendSelectedMedia = async function(){
     if(!selectedFile)return;
-    const user=auth.currentUser;if(!user){toast('Faça login novamente.');return;}
-    const btn=document.getElementById('sendPreviewBtn');
+    const user=auth.currentUser;if(!user)return;
     try{
-      if(btn){btn.disabled=true;btn.textContent='…';}
       const isAudio=mediaType==='audio';
-      toast(isAudio?'Enviando áudio...':'Enviando foto...');
-      const result=await uploadChatFile(selectedFile,user,isAudio?'audio':'image', pct => toast(`${isAudio?'Enviando áudio':'Enviando foto'} ${pct}%...`));
-      await addDoc(collection(db,'mensagens'),{
-        texto:'', mediaUrl:result.url, mediaType:isAudio?'audio':'image', mediaContentType:result.contentType,
-        remetenteId:user.uid, remetenteNome:user.displayName||'Amor', data:serverTimestamp()
-      });
+      const result=await uploadChatFile(selectedFile,user,isAudio?'audio':'image');
+      await addDoc(collection(db,'mensagens'),{texto:'',mediaUrl:result.url,mediaType:isAudio?'audio':'image',remetenteId:user.uid,remetenteNome:user.displayName||'Amor',data:serverTimestamp()});
       cancelMediaUpload();
       toast(isAudio?'Áudio enviado!':'Foto enviada!');
-    }catch(err){
-      console.error('Erro ao enviar mídia:',err);
-      if(btn){btn.disabled=false;btn.textContent='➤';}
-      toast('Não foi possível enviar a mídia: '+(err?.message||'erro desconhecido'));
-    }
+    }catch(err){console.error(err);toast('Erro ao enviar mídia.');}
   };
-  window.cancelMediaUpload=function(){resetAudioPreview();selectedFile=null;mediaType=null;recordingMimeType='';recordingExt='webm';const i=document.getElementById('chatImageInput');if(i)i.value='';document.getElementById('chatPreview')?.classList.add('hidden');const t=document.getElementById('previewText');if(t)t.textContent='';};
 
-  let activeChatAudio = null;
-  let activeChatVoice = null;
-  function formatAudioDuration(seconds) { const s=Math.max(0,Math.floor(seconds||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+  let activeChatAudio = null, activeChatVoice = null;
+  function formatAudioDuration(s) { const sec=Math.max(0,Math.floor(s||0)); return Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0'); }
 
+  // --- CHAT COM OPÇÕES DE EDITAR E APAGAR ---
   function initChat() {
     const chatContainer = document.getElementById("chatMessages");
-    const chatQuery = query(collection(db, "mensagens"), orderBy("data", "asc"));
-
-    return onSnapshot(chatQuery, (snapshot) => {
+    return onSnapshot(query(collection(db, "mensagens"), orderBy("data", "asc")), (snapshot) => {
       chatContainer.innerHTML = "";
       const currentUser = auth.currentUser;
       let lastDateStr = "";
-
-      if (snapshot.empty) {
-        chatContainer.innerHTML = '<div class="empty">Nenhuma mensagem ainda. Envie a primeira! ❤️</div>';
-        return;
-      }
-
+      if (snapshot.empty) { chatContainer.innerHTML = '<div class="empty">Nenhuma mensagem ainda. Envie a primeira! ❤️</div>'; return; }
       snapshot.forEach((docSnap) => {
-        const msg = docSnap.data();
-        const msgId = docSnap.id;
-        const isMine = currentUser && (msg.remetenteId === currentUser.uid);
-
+        const msg = docSnap.data(), msgId = docSnap.id, isMine = currentUser && (msg.remetenteId === currentUser.uid);
         if (msg.data) {
           const currentDateStr = formatMsgDate(msg.data);
           if (currentDateStr !== lastDateStr) {
             const dateDivider = document.createElement("div");
-            dateDivider.className = "chat-date-divider";
-            dateDivider.textContent = currentDateStr;
-            chatContainer.appendChild(dateDivider);
-            lastDateStr = currentDateStr;
+            dateDivider.className = "chat-date-divider"; dateDivider.textContent = currentDateStr;
+            chatContainer.appendChild(dateDivider); lastDateStr = currentDateStr;
           }
         }
-
         const msgDiv = document.createElement("div");
         msgDiv.className = `chat-msg ${isMine ? 'mine' : 'other'}`;
-
         if (!isMine && msg.remetenteNome) {
-          const senderDiv = document.createElement("div");
-          senderDiv.className = "chat-msg-sender";
-          senderDiv.textContent = msg.remetenteNome;
+          const senderDiv = document.createElement("div"); senderDiv.className = "chat-msg-sender"; senderDiv.textContent = msg.remetenteNome;
           msgDiv.appendChild(senderDiv);
         }
-
         if (msg.texto) {
-          const textDiv = document.createElement("div");
-          textDiv.textContent = msg.texto + (msg.editado ? " (editado)" : "");
+          const textDiv = document.createElement("div"); textDiv.textContent = msg.texto + (msg.editado ? " (editado)" : "");
           msgDiv.appendChild(textDiv);
         }
-
         if (msg.mediaUrl && msg.mediaType === 'image') {
-          const imgEl = document.createElement("img");
-          imgEl.src = msg.mediaUrl;
-          imgEl.className = "chat-img-media";
-          imgEl.onclick = () => {
-            document.getElementById('lightboxImage').src = msg.mediaUrl;
-            document.getElementById('photoLightbox').classList.add('active');
-          };
+          const imgEl = document.createElement("img"); imgEl.src = msg.mediaUrl; imgEl.className = "chat-img-media";
+          imgEl.onclick = () => { document.getElementById('lightboxImage').src = msg.mediaUrl; document.getElementById('photoLightbox').classList.add('active'); };
           msgDiv.appendChild(imgEl);
         }
-
         if (msg.mediaUrl && msg.mediaType === 'audio') {
-          const voice = document.createElement('div');
-          voice.className = 'voice-player';
-          const play = document.createElement('button');
-          play.type = 'button'; play.className = 'voice-play'; play.textContent = '▶'; const ariaLabel = 'Reproduzir áudio'; play.setAttribute('aria-label', ariaLabel);
+          const voice = document.createElement('div'); voice.className = 'voice-player';
+          const play = document.createElement('button'); play.className = 'voice-play'; play.textContent = '▶';
           const wave = document.createElement('div'); wave.className = 'voice-wave';
-          const heights = [8,14,20,11,17,8,22,13,18,10,21,15,8,19,12,22,9,17,14,20,10,16,8,19,13,22];
-          heights.forEach(h => { const bar=document.createElement('i'); bar.style.height=h+'px'; wave.appendChild(bar); });
+          for(let i=0;i<12;i++){ const bar=document.createElement('i'); bar.style.height=(8+Math.random()*15)+'px'; wave.appendChild(bar); }
           const duration = document.createElement('span'); duration.className='voice-duration'; duration.textContent='0:00';
-          const audio = new Audio(msg.mediaUrl); audio.preload='metadata';
+          const audio = new Audio(msg.mediaUrl);
           audio.addEventListener('loadedmetadata',()=>{ if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration); });
-          audio.addEventListener('timeupdate',()=>{ if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration-audio.currentTime); });
-          audio.addEventListener('ended',()=>{ voice.classList.remove('playing'); play.textContent='▶'; if(isFinite(audio.duration)) duration.textContent=formatAudioDuration(audio.duration); });
-          play.onclick=()=>{ if(activeChatAudio && activeChatAudio!==audio){activeChatAudio.pause();activeChatVoice?.classList.remove('playing');activeChatVoice?.querySelector('.voice-play')?.replaceChildren(document.createTextNode('▶'));} if(audio.paused){audio.play().then(()=>{activeChatAudio=audio;activeChatVoice=voice;voice.classList.add('playing');play.textContent='❚❚';}).catch(()=>toast('Não foi possível reproduzir este áudio.'));}else{audio.pause();voice.classList.remove('playing');play.textContent='▶';} };
+          audio.addEventListener('ended',()=>{ voice.classList.remove('playing'); play.textContent='▶'; });
+          play.onclick=()=>{
+            if(activeChatAudio && activeChatAudio!==audio){activeChatAudio.pause();activeChatVoice?.classList.remove('playing');}
+            if(audio.paused){audio.play();activeChatAudio=audio;activeChatVoice=voice;voice.classList.add('playing');play.textContent='❚❚';}
+            else{audio.pause();voice.classList.remove('playing');play.textContent='▶';}
+          };
           voice.append(play,wave,duration); msgDiv.appendChild(voice);
         }
-
-        const timeDiv = document.createElement("div");
-        timeDiv.className = "chat-msg-time";
-        timeDiv.textContent = formatMsgTime(msg.data);
+        const timeDiv = document.createElement("div"); timeDiv.className = "chat-msg-time"; timeDiv.textContent = formatMsgTime(msg.data);
         msgDiv.appendChild(timeDiv);
 
         if (isMine) {
@@ -974,31 +900,16 @@ body.chat-open .bottom-nav{display:none}
 
         chatContainer.appendChild(msgDiv);
       });
-
       chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, (error) => {
-      console.error('Erro na sincronização do chat:', error);
-      toast('Não foi possível atualizar o chat em tempo real.');
     });
   }
-
-  document.getElementById("chatForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if(selectedFile){await sendSelectedMedia();return;}
-    const input=document.getElementById("chatInput"),texto=input.value.trim(),user=auth.currentUser;
-    if(!texto)return;
-    if(!user){toast('Faça login novamente.');return;}
-    try{
-      await addDoc(collection(db,"mensagens"),{texto,mediaUrl:"",mediaType:null,remetenteId:user.uid,remetenteNome:user.displayName||"Amor",data:serverTimestamp()});
-      input.value="";
-    }catch(err){console.error('Erro ao enviar mensagem:',err);toast("Erro ao enviar mensagem: "+(err?.message||''));}
-  });
 
   window.editChatMessage = async function(msgId, currentText) {
     const newText = prompt("Edite sua mensagem:", currentText);
     if (newText !== null && newText.trim() !== "") {
       const msgRef = doc(db, "mensagens", msgId);
       await updateDoc(msgRef, { texto: newText.trim(), editado: true });
+      toast('Mensagem editada!');
     }
   };
 
@@ -1006,137 +917,65 @@ body.chat-open .bottom-nav{display:none}
     if (confirm("Deseja apagar esta mensagem?")) {
       const msgRef = doc(db, "mensagens", msgId);
       await deleteDoc(msgRef);
+      toast('Mensagem apagada.');
     }
   };
 
+  document.getElementById("chatForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if(selectedFile){await sendSelectedMedia();return;}
+    const input=document.getElementById("chatInput"),texto=input.value.trim(),user=auth.currentUser;
+    if(!texto||!user)return;
+    await addDoc(collection(db,"mensagens"),{texto,mediaUrl:"",mediaType:null,remetenteId:user.uid,remetenteNome:user.displayName||"Amor",data:serverTimestamp()});
+    input.value="";
+  });
+
   function initDataSync() {
     return onSnapshot(docRef, (snapshot) => {
-      try {
-        if (snapshot.exists()) {
-          const incoming = snapshot.data() || {};
-          window.data = merge(defaults, incoming);
-          lastSyncedData = JSON.parse(JSON.stringify(window.data));
-          renderAll();
-        } else {
-          window.data = JSON.parse(JSON.stringify(defaults));
-          lastSyncedData = JSON.parse(JSON.stringify(window.data));
-          save('configuração inicial', 'O Cantinho foi criado ❤️').catch(()=>{});
-        }
-      } catch (err) {
-        console.error('Erro ao sincronizar dados:', err);
-        toast('Erro ao atualizar o Cantinho.');
+      if (snapshot.exists()) {
+        window.data = merge(defaults, snapshot.data() || {});
+        lastSyncedData = JSON.parse(JSON.stringify(window.data));
+        renderAll();
+      } else {
+        window.data = JSON.parse(JSON.stringify(defaults));
+        save('configuração inicial', 'Cantinho criado');
       }
-    }, (error) => {
-      console.error('Erro no listener do Firestore:', error);
-      toast('Não foi possível sincronizar o Cantinho em tempo real.');
     });
   }
 
   function merge(base, src) {
     const out = JSON.parse(JSON.stringify(base));
-    Object.keys(src || {}).forEach(k => {
-      if (src[k] !== undefined) out[k] = src[k];
-    });
+    Object.keys(src || {}).forEach(k => { if (src[k] !== undefined) out[k] = src[k]; });
     return out;
   }
 
-  async function migrateDataUrlImages(current) {
-    const user=auth.currentUser;
-    if(!user) return current;
-    if(current?.couple?.photo?.startsWith?.('data:')) {
-      const blob=await fetch(current.couple.photo).then(r=>r.blob());
-      const result=await uploadChatFile(blob,user,'image');
-      current.couple.photo=result.url;
-    }
-    if(Array.isArray(current?.photos)) {
-      for(let i=0;i<current.photos.length;i++) {
-        const src=current.photos[i]?.src;
-        if(typeof src==='string' && src.startsWith('data:')) {
-          const blob=await fetch(src).then(r=>r.blob());
-          const result=await uploadChatFile(blob,user,'image');
-          current.photos[i].src=result.url;
-        }
-      }
-    }
-    return current;
-  }
-
   window.save = async function(customTitle, customBody) {
-    // Serializa gravações para evitar dois cliques rápidos criando estados conflitantes.
     savingQueue = savingQueue.then(async () => {
       const localSnapshot = JSON.parse(JSON.stringify(window.data));
-      const previous = lastSyncedData || {};
-      const changedKey = Object.keys(localSnapshot).find(k =>
-        JSON.stringify(localSnapshot[k]) !== JSON.stringify(previous[k])
-      );
-
-      const labels = {
-        couple:'Identidade do casal',history:'Nossa história',photos:'Nossas fotos',
-        dates:'Datas importantes',plans:'Nossos planos',wishes:'Lista de desejos',
-        today:'Ideias para hoje',challenges:'Desafios do casal',moods:'Check-in',
-        letters:'Cartinhas',mural:'Mural',quiz:'Quiz',checkins:'Check-in'
-      };
       const actor = auth.currentUser;
-      const meta = {
-        actorUid: actor?.uid || '',
-        actorName: actor?.displayName || 'Alguém',
-        changeType: customTitle || labels[changedKey] || 'Atualização',
-        changeBody: customBody || `Alterou ${labels[changedKey] || 'o Cantinho'} ❤️`,
-        changedKey: changedKey || '',
-        changedAt: Date.now()
-      };
-
+      const meta = { actorUid: actor?.uid || '', changeType: customTitle || 'Atualização', changeBody: customBody || 'Atualizou o Cantinho ❤️', changedAt: Date.now() };
       await runTransaction(db, async (tx) => {
         const snap = await tx.get(docRef);
         const server = snap.exists() ? snap.data() : {};
-        const merged = { ...server };
-
-        // Grava somente o campo que mudou. Assim Lara não apaga uma alteração
-        // feita pelo outro celular em outro campo enquanto estava com uma cópia antiga.
-        if(changedKey) merged[changedKey] = localSnapshot[changedKey];
-        Object.keys(defaults).forEach(k => {
-          if(!(k in merged)) merged[k] = localSnapshot[k];
-        });
-        merged._meta = meta;
-        tx.set(docRef, merged);
+        tx.set(docRef, { ...server, ...localSnapshot, _meta: meta });
       });
-
-      // O listener onSnapshot é a fonte oficial e atualizará window.data.
-      // Não forçamos lastSyncedData aqui para não esconder alterações concorrentes.
       renderAll();
-    }).catch(e => {
-      console.error('Erro ao salvar no Firebase:', e);
-      toast('Não foi possível salvar: '+(e?.message||'verifique sua conexão e as regras do Firestore.'));
-      throw e;
     });
     return savingQueue;
   };
 
-  window.esc = function(s) {
-    return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  };
-
-  window.toast = function(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 1800);
-  };
+  window.esc = function(s) { return String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); };
+  window.toast = function(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 1800); };
 
   window.showPage = function(id, navEl) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const page = document.getElementById(id); 
-    if(page) page.classList.add('active');
+    document.getElementById(id)?.classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     if(navEl) navEl.classList.add('active');
     else if(id === 'home') document.querySelector('.nav-item')?.classList.add('active');
     document.body.classList.toggle('chat-open', id === 'chat');
     window.scrollTo(0,0);
     if(id === 'checkin') renderCheckin();
-    if(id === 'chat') {
-      const c = document.getElementById("chatMessages");
-      c.scrollTop = c.scrollHeight;
-    }
   };
 
   window.openSettings = function(id, btn) {
@@ -1148,15 +987,9 @@ body.chat-open .bottom-nav{display:none}
 
   function daysTogether() {
     if(!window.data.couple.date) return null;
-    const d = new Date(window.data.couple.date + 'T00:00:00'), now = new Date();
-    return Math.max(0, Math.floor((now - d) / 86400000));
+    return Math.max(0, Math.floor((new Date() - new Date(window.data.couple.date + 'T00:00:00')) / 86400000));
   }
-
-  function fmtDate(s) {
-    if(!s) return '';
-    const d = new Date(s + 'T00:00:00');
-    return d.toLocaleDateString('pt-BR');
-  }
+  function fmtDate(s) { return s ? new Date(s + 'T00:00:00').toLocaleDateString('pt-BR') : ''; }
 
   function renderHome() {
     document.getElementById('appTitle').textContent = window.data.couple.title;
@@ -1164,215 +997,244 @@ body.chat-open .bottom-nav{display:none}
     document.getElementById('coupleNames').textContent = window.data.couple.names;
     document.getElementById('homeMessage').textContent = window.data.couple.message;
     document.getElementById('relationshipDate').textContent = window.data.couple.date ? ('Desde ' + fmtDate(window.data.couple.date)) : '';
-    const cp = document.getElementById('couplePhoto');
-    const ph = document.getElementById('couplePhotoPlaceholder');
-    if (cp && ph) {
-      if (window.data.couple.photo) { cp.src = window.data.couple.photo; cp.style.display = 'block'; ph.style.display = 'none'; }
-      else { cp.removeAttribute('src'); cp.style.display = 'none'; ph.style.display = 'flex'; }
-    }
+    const cp = document.getElementById('couplePhoto'), ph = document.getElementById('couplePhotoPlaceholder');
+    if (window.data.couple.photo) { cp.src = window.data.couple.photo; cp.style.display = 'block'; ph.style.display = 'none'; }
+    else { cp.style.display = 'none'; ph.style.display = 'flex'; }
     const days = daysTogether();
     document.getElementById('counter').innerHTML = days === null ? '— <small>dias juntos</small>' : days + ' <small>dias juntos</small>';
   }
 
   function renderHistory() {
-    const v = document.getElementById('historyView');
-    v.innerHTML = window.data.history.length ? '<div class="timeline">' + window.data.history.map((x,i) => `<div class="event"><h3>${esc(x.title)}</h3><div class="small">${fmtDate(x.date)}</div><p>${esc(x.text)}</p><button class="btn secondary" onclick="editItem('history',${i})">✏️ Editar este momento</button></div>`).join('') + '</div>' : '<div class="empty">Nenhum momento cadastrado ainda.</div>';
+    document.getElementById('historyView').innerHTML = window.data.history.length ? '<div class="timeline">' + window.data.history.map((x,i) => `<div class="event"><h3>${esc(x.title)}</h3><div class="small">${fmtDate(x.date)}</div><p>${esc(x.text)}</p><button class="btn secondary" onclick="editItem('history',${i})">✏️ Editar</button></div>`).join('') + '</div>' : '<div class="empty">Nenhum momento.</div>';
   }
 
+  // --- RENDERIZAÇÃO DAS FOTOS COM ALINHAMENTO PERFEITO NA BASE ---
   function renderPhotos() {
     const v = document.getElementById('photosView');
-    v.innerHTML = window.data.photos.length ? window.data.photos.map((x,i) => `<div class="photo">${x.src ? `<img src="${esc(x.src)}" alt="" onclick="openPhotoLightbox(${i})">` : '<div style="height:115px;display:flex;align-items:center;justify-content:center;font-size:34px">📸</div>'}<div class="caption">${esc(x.caption)}</div><button class="btn secondary" onclick="editItem('photos',${i})">✏️ Editar</button></div>`).join('') : '<div class="empty" style="grid-column:1/-1">Nenhuma foto adicionada ainda.</div>';
+    v.innerHTML = window.data.photos.length ? window.data.photos.map((x,i) => {
+      const pickerAlignClass = (i % 2 === 0) ? 'photo-picker-left' : 'photo-picker-right';
+      return `
+      <div class="photo">
+        <div>
+          ${x.src ? `<img src="${esc(x.src)}" alt="" onclick="openPhotoLightbox(${i})">` : '<div style="height:115px;display:flex;align-items:center;justify-content:center;font-size:34px">📸</div>'}
+          <div class="caption">${esc(x.caption)}</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <button class="btn secondary" onclick="editItem('photos',${i})" style="font-size:11px; padding:6px 8px;">✏️ Editar</button>
+          
+          <div class="photo-reaction-wrap">
+            <button type="button" class="react-btn ${x.reaction ? 'active' : ''}" data-photo-index="${i}" aria-label="Reagir">
+              ${x.reaction || '<svg class="heart-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'}
+            </button>
+            <div class="reaction-picker ${pickerAlignClass}" id="photoPicker-${i}">
+              <span class="reaction-emoji" data-emoji="❤️">❤️</span>
+              <span class="reaction-emoji" data-emoji="😂">😂</span>
+              <span class="reaction-emoji" data-emoji="😮">😮</span>
+              <span class="reaction-emoji" data-emoji="😢">😢</span>
+              <span class="reaction-emoji" data-emoji="🙏">🙏</span>
+              <div class="add-btn" data-type="add">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    }).join('') : '<div class="empty" style="grid-column:1/-1">Nenhuma foto adicionada ainda.</div>';
   }
+
+  function openPhotoPicker(index) {
+    photoIsDragging = true;
+    document.querySelectorAll('.reaction-picker').forEach(p => p.classList.remove('visible'));
+    const picker = document.getElementById(`photoPicker-${index}`);
+    if(picker) picker.classList.add('visible');
+  }
+
+  function closePhotoPicker() {
+    document.querySelectorAll('.reaction-picker').forEach(p => p.classList.remove('visible'));
+    clearPhotoHoverState();
+    photoIsDragging = false;
+    activePhotoReactIndex = null;
+  }
+
+  function highlightPhotoItemAtPoint(x, y) {
+    const elem = document.elementFromPoint(x, y);
+    const target = elem ? elem.closest('.reaction-emoji, .add-btn') : null;
+    if (target !== photoCurrentHoveredItem) {
+      clearPhotoHoverState();
+      if (target) { target.classList.add('hovered'); photoCurrentHoveredItem = target; }
+    }
+  }
+
+  function clearPhotoHoverState() {
+    if (photoCurrentHoveredItem) { photoCurrentHoveredItem.classList.remove('hovered'); photoCurrentHoveredItem = null; }
+  }
+
+  function selectPhotoReaction(index, emoji) {
+    if(window.data.photos[index].reaction === emoji) {
+      window.data.photos[index].reaction = null;
+    } else {
+      window.data.photos[index].reaction = emoji;
+    }
+    save('Reação na foto', 'Alguém reagiu a uma foto ❤️');
+    renderPhotos();
+  }
+
+  function handlePhotoSingleTap(index) {
+    const current = window.data.photos[index].reaction;
+    selectPhotoReaction(index, current ? null : '❤️');
+  }
+
+  function handlePhotoRelease() {
+    if (photoCurrentHoveredItem && activePhotoReactIndex !== null) {
+      if (photoCurrentHoveredItem.dataset.type === 'add') {
+        closePhotoPicker();
+        openPhotoModal(activePhotoReactIndex);
+      } else if (photoCurrentHoveredItem.dataset.emoji) {
+        selectPhotoReaction(activePhotoReactIndex, photoCurrentHoveredItem.dataset.emoji);
+        closePhotoPicker();
+      }
+    } else {
+      closePhotoPicker();
+    }
+  }
+
+  document.addEventListener('touchstart', (e) => {
+    const btn = e.target.closest('.react-btn');
+    if(btn) {
+      const index = parseInt(btn.getAttribute('data-photo-index'));
+      activePhotoReactIndex = index;
+      photoHoldTimer = setTimeout(() => { openPhotoPicker(index); }, 180);
+    }
+  }, {passive: true});
+
+  window.addEventListener('touchmove', (e) => {
+    if (!photoIsDragging) return;
+    const touch = e.touches[0];
+    highlightPhotoItemAtPoint(touch.clientX, touch.clientY);
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    clearTimeout(photoHoldTimer);
+    if (photoIsDragging) {
+      handlePhotoRelease();
+    } else if (activePhotoReactIndex !== null) {
+      const idx = activePhotoReactIndex;
+      closePhotoPicker();
+      handlePhotoSingleTap(idx);
+    }
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    const btn = e.target.closest('.react-btn');
+    if(btn) {
+      const index = parseInt(btn.getAttribute('data-photo-index'));
+      activePhotoReactIndex = index;
+      photoHoldTimer = setTimeout(() => { openPhotoPicker(index); }, 180);
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (photoIsDragging) highlightPhotoItemAtPoint(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    clearTimeout(photoHoldTimer);
+    if (photoIsDragging) {
+      handlePhotoRelease();
+    } else if (activePhotoReactIndex !== null) {
+      const idx = activePhotoReactIndex;
+      closePhotoPicker();
+      if(e.target.closest('.react-btn')) { handlePhotoSingleTap(idx); }
+    }
+  });
+
+  window.openPhotoModal = function(index) {
+    activePhotoIndexForModal = index;
+    closePhotoPicker();
+    document.getElementById('emojiModalBackdrop').classList.add('active');
+  };
+
+  window.closePhotoModal = function() {
+    document.getElementById('emojiModalBackdrop').classList.remove('active');
+    activePhotoIndexForModal = null;
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const fullEmojiPicker = document.getElementById('fullEmojiPicker');
+    if(fullEmojiPicker) {
+      fullEmojiPicker.addEventListener('emoji-click', event => {
+        if(activePhotoIndexForModal !== null && window.data.photos[activePhotoIndexForModal]) {
+          window.data.photos[activePhotoIndexForModal].reaction = event.detail.unicode;
+          save('Reação na foto', 'Alguém reagiu a uma foto 💖');
+          renderPhotos();
+        }
+        closePhotoModal();
+      });
+    }
+  });
 
   function renderDates() {
     const arr = [...window.data.dates].sort((a,b) => a.when.localeCompare(b.when));
-    const v = document.getElementById('datesView');
-    if(!arr.length) { v.innerHTML = '<div class="empty">Nenhuma data cadastrada ainda.</div>'; return; }
-    const today = new Date(); today.setHours(0,0,0,0);
-    v.innerHTML = arr.map(x => {
-      const i = window.data.dates.indexOf(x);
-      const d = new Date(x.when + 'T00:00:00');
-      const diff = Math.ceil((d - today) / 86400000);
-      return `<div class="item"><div class="item-title">${esc(x.title)}</div><div class="item-meta">${fmtDate(x.when)} · ${esc(x.type || 'Data especial')}</div><div class="small">${diff > 0 ? 'Faltam ' + diff + ' dias' : diff === 0 ? 'É hoje!' : 'Já aconteceu há ' + Math.abs(diff) + ' dias'}${x.note ? ' · ' + esc(x.note) : ''}</div><button class="btn secondary" onclick="editItem('dates',${i})">✏️ Editar esta data</button></div>`;
-    }).join('');
+    document.getElementById('datesView').innerHTML = arr.length ? arr.map(x => `<div class="item"><b>${esc(x.title)}</b><div class="item-meta">${fmtDate(x.when)}</div></div>`).join('') : '<div class="empty">Nenhuma data.</div>';
   }
 
   function renderPlans() {
-    const v = document.getElementById('plansView');
-    v.innerHTML = window.data.plans.length ? window.data.plans.map((x,i) => `<div class="item"><div class="item-title">✨ ${esc(x.title)}</div><div class="small">${esc(x.text)}</div><button class="btn secondary" onclick="editItem('plans',${i})">✏️ Editar este plano</button></div>`).join('') : '<div class="empty">Nenhum plano cadastrado ainda.</div>';
+    document.getElementById('plansView').innerHTML = window.data.plans.length ? window.data.plans.map(x => `<div class="item"><b>✨ ${esc(x.title)}</b><div class="small">${esc(x.text)}</div></div>`).join('') : '<div class="empty">Nenhum plano.</div>';
   }
 
   function renderDesires() {
-    const v = document.getElementById('desiresView');
-    let arr = window.desireFavorites ? window.data.wishes.filter(x => x.favorite) : window.data.wishes;
-    v.innerHTML = arr.length ? arr.map((x) => {
-      const real = window.data.wishes.indexOf(x);
-      return `<div class="desire"><input class="check" type="checkbox" ${x.done ? 'checked' : ''} onchange="toggleWish(${real})"><div class="desire-main"><div class="desire-title">${esc(x.text)}</div><div class="small">${esc(x.person || '')} ${x.category ? '<span class="tag">' + esc(x.category) + '</span>' : ''}</div><div class="stars">${'⭐'.repeat(Number(x.level) || 1)}</div></div><button class="heart-btn" onclick="toggleFav(${real})">${x.favorite ? '❤️' : '♡'}</button></div>`;
-    }).join('') : '<div class="empty">Nenhum desejo cadastrado.</div>';
+    document.getElementById('desiresView').innerHTML = window.data.wishes.length ? window.data.wishes.map(x => `<div class="desire"><div class="desire-main"><div class="desire-title">${esc(x.text)}</div><div class="small">${esc(x.category || '')}</div></div></div>`).join('') : '<div class="empty">Nenhum desejo.</div>';
   }
 
   window.drawDesire = function() {
-    const pool = window.data.wishes.filter(x => !x.done);
-    const box = document.getElementById('desireDraw');
+    const pool = window.data.wishes.filter(x => !x.done), box = document.getElementById('desireDraw');
     box.classList.remove('hidden');
-    if(!pool.length) { box.innerHTML = '<span class="today-placeholder">Cadastre desejos em ⚙️ Configurações → Desejos.</span>'; return; }
+    if(!pool.length) { box.innerHTML = '<span class="today-placeholder">Cadastre desejos nos Ajustes.</span>'; return; }
     const x = pool[Math.floor(Math.random() * pool.length)];
-    box.innerHTML = `<div><div class="result-emoji">🔥</div><div class="result-text">${esc(x.text)}</div><div class="small">${esc(x.category || '')} ${x.person ? '· ' + esc(x.person) : ''}</div></div>`;
+    box.innerHTML = `<div><div class="result-emoji">🔥</div><div class="result-text">${esc(x.text)}</div></div>`;
   };
-
-  window.filterDesires = function() {
-    window.desireFavorites = !window.desireFavorites;
-    renderDesires();
-    toast(window.desireFavorites ? 'Mostrando favoritos' : 'Mostrando todos');
-  };
-
-  window.toggleWish = function(i) { window.data.wishes[i].done = !window.data.wishes[i].done; save(); };
-  window.toggleFav = function(i) { window.data.wishes[i].favorite = !window.data.wishes[i].favorite; save(); };
 
   window.drawToday = function() {
     const box = document.getElementById('todayResult');
-    if(!window.data.today.length) { box.innerHTML = '<span class="today-placeholder">Nenhuma opção criada. Vá em ⚙️ Configurações → Hoje.</span>'; return; }
-    const x = window.data.today[Math.floor(Math.random() * window.data.today.length)];
-    box.innerHTML = `<div><div class="result-emoji">🎲</div><div class="result-text">${esc(x)}</div></div>`;
+    if(!window.data.today.length) { box.innerHTML = '<span class="today-placeholder">Nenhuma opção criada nos Ajustes.</span>'; return; }
+    box.innerHTML = `<div><div class="result-emoji">🎲</div><div class="result-text">${esc(window.data.today[Math.floor(Math.random() * window.data.today.length)])}</div></div>`;
   };
 
   window.drawChallenge = function() {
     const box = document.getElementById('challengeResult');
-    if(!window.data.challenges.length) { box.innerHTML = '<span class="today-placeholder">Nenhum desafio criado. Vá em ⚙️ Configurações → Desafios.</span>'; return; }
-    const x = window.data.challenges[Math.floor(Math.random() * window.data.challenges.length)];
-    box.innerHTML = `<div><div class="result-emoji">🥰</div><div class="result-text">${esc(x)}</div></div>`;
+    if(!window.data.challenges.length) { box.innerHTML = '<span class="today-placeholder">Nenhum desafio criado nos Ajustes.</span>'; return; }
+    box.innerHTML = `<div><div class="result-emoji">🥰</div><div class="result-text">${esc(window.data.challenges[Math.floor(Math.random() * window.data.challenges.length)])}</div></div>`;
   };
 
-  function renderTodayQuickEdit() {
-    const e = document.getElementById('todayQuickEdit'); if(!e) return;
-    e.innerHTML = window.data.today.length ? '<b>Opções:</b><div class="quick-edit">' + window.data.today.map((x,i) => `<button class="btn secondary" onclick="editItem('today',${i})">${esc(x)}</button>`).join('') + '</div>' : '';
-  }
-
-  function renderChallengeQuickEdit() {
-    const e = document.getElementById('challengeQuickEdit'); if(!e) return;
-    e.innerHTML = window.data.challenges.length ? '<b>Desafios:</b><div class="quick-edit">' + window.data.challenges.map((x,i) => `<button class="btn secondary" onclick="editItem('challenges',${i})">${esc(x)}</button>`).join('') + '</div>' : '';
-  }
-
   function renderCheckin() {
-    const g = document.getElementById('moodGrid');
-    g.innerHTML = window.data.moods.map((m,i) => `<button class="mood-btn ${window.selectedMood === i ? 'selected' : ''}" onclick="selectMood(${i})"><div class="mood-emoji">${esc(m.emoji)}</div><div class="mood-label">${esc(m.label)}</div></button>`).join('');
-    const h = document.getElementById('checkinHistory');
-    h.innerHTML = window.data.checkins.length ? window.data.checkins.slice().reverse().slice(0,8).map(x => `<div class="item"><b>${esc(x.emoji)} ${esc(x.label)}</b><div class="item-meta">${fmtDate(x.date)}</div>${x.note ? '<div class="small">' + esc(x.note) + '</div>' : ''}</div>`).join('') : '<div class="empty">Nenhum check-in ainda.</div>';
+    document.getElementById('moodGrid').innerHTML = window.data.moods.map((m,i) => `<button class="mood-btn ${window.selectedMood === i ? 'selected' : ''}" onclick="selectMood(${i})"><div class="mood-emoji">${esc(m.emoji)}</div><div class="mood-label">${esc(m.label)}</div></button>`).join('');
+    document.getElementById('checkinHistory').innerHTML = window.data.checkins.length ? window.data.checkins.slice().reverse().slice(0,8).map(x => `<div class="item"><b>${esc(x.emoji)} ${esc(x.label)}</b><div class="item-meta">${fmtDate(x.date)}</div></div>`).join('') : '<div class="empty">Nenhum check-in.</div>';
   }
 
   window.selectMood = function(i) { window.selectedMood = i; renderCheckin(); };
-
   window.saveCheckin = function() {
-    if(window.selectedMood < 0) { toast('Escolha uma opção primeiro.'); return; }
+    if(window.selectedMood < 0) { toast('Escolha uma opção.'); return; }
     const m = window.data.moods[window.selectedMood];
     window.data.checkins.push({ emoji: m.emoji, label: m.label, note: document.getElementById('checkinNote').value, date: new Date().toISOString().slice(0,10) });
-    document.getElementById('checkinNote').value = '';
-    window.selectedMood = -1;
-    save();
-    toast('Check-in salvo ❤️');
+    document.getElementById('checkinNote').value = ''; window.selectedMood = -1; save(); toast('Check-in salvo ❤️');
   };
 
-  function renderLetters() {
-    const v = document.getElementById('lettersView');
-    v.innerHTML = window.data.letters.length ? window.data.letters.map((x,i) => `<div class="item"><div class="item-title">💌 ${esc(x.title)}</div><div class="small">${esc(x.text)}</div><button class="btn secondary" onclick="editItem('letters',${i})">✏️ Editar esta cartinha</button></div>`).join('') : '<div class="empty">Nenhuma cartinha ainda.</div>';
-  }
-
-  function renderMural() {
-    const v = document.getElementById('muralView');
-    v.innerHTML = window.data.mural.length ? window.data.mural.slice().reverse().map(x => {
-      const i = window.data.mural.indexOf(x);
-      return `<div class="item"><div>❤️ ${esc(x.text)}</div><div class="item-meta">${fmtDate(x.date)}</div><button class="btn secondary" onclick="editItem('mural',${i})">✏️ Editar esta lembrança</button></div>`;
-    }).join('') : '<div class="empty">Nenhuma lembrança no mural.</div>';
-  }
-
+  function renderLetters() { document.getElementById('lettersView').innerHTML = window.data.letters.length ? window.data.letters.map(x => `<div class="item"><b>💌 ${esc(x.title)}</b><div class="small">${esc(x.text)}</div></div>`).join('') : '<div class="empty">Nenhuma cartinha.</div>'; }
+  function renderMural() { document.getElementById('muralView').innerHTML = window.data.mural.length ? window.data.mural.slice().reverse().map(x => `<div class="item"><div>❤️ ${esc(x.text)}</div></div>`).join('') : '<div class="empty">Nenhum mural.</div>'; }
+  
   function renderQuiz() {
-    const v = document.getElementById('quizView');
-    if(!window.data.quiz.length) { v.innerHTML = '<div class="empty">Nenhuma pergunta criada ainda.</div>'; return; }
+    if(!window.data.quiz.length) { document.getElementById('quizView').innerHTML = '<div class="empty">Nenhum quiz.</div>'; return; }
     const q = window.data.quiz[window.quizIndex % window.data.quiz.length];
-    v.innerHTML = `<div class="item"><div class="small">Pergunta ${window.quizIndex % window.data.quiz.length + 1} de ${window.data.quiz.length}</div><h3 style="margin:8px 0 14px">${esc(q.question)}</h3>${q.options.map((o,i) => `<button class="btn secondary full" style="margin-top:8px;text-align:left" onclick="answerQuiz(${i},${q.correct})">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join('')}</div>`;
+    document.getElementById('quizView').innerHTML = `<div class="item"><h3>${esc(q.question)}</h3>${q.options.map((o,i) => `<button class="btn secondary full" style="margin-top:8px;text-align:left" onclick="toast(i===${q.correct}?'Acertou! ❤️':'Quase! 😘');window.quizIndex++;setTimeout(renderQuiz,500);">${String.fromCharCode(65+i)}. ${esc(o)}</button>`).join('')}</div>`;
   }
-
-  window.answerQuiz = function(i, c) {
-    toast(i === c ? 'Acertou! ❤️' : 'Quase! 😘');
-    window.quizIndex++;
-    setTimeout(renderQuiz, 500);
-  };
-
-  window.previewCouplePhoto = function(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { toast('Escolha uma imagem válida.'); event.target.value=''; return; }
-    if (pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
-    pendingCouplePhotoFile = file;
-    pendingCouplePhotoPreviewUrl = URL.createObjectURL(file);
-    renderCouplePhotoPreview();
-    const cp=document.getElementById('couplePhoto'), ph=document.getElementById('couplePhotoPlaceholder');
-    if(cp && ph){cp.src=pendingCouplePhotoPreviewUrl;cp.style.display='block';ph.style.display='none';}
-  };
-
-  function renderCouplePhotoPreview() {
-    const box = document.getElementById('couplePhotoPreview');
-    if (!box) return;
-    const src = pendingCouplePhotoPreviewUrl || window.data.couple.photo || '';
-    box.innerHTML = src ? `<img src="${esc(src)}" alt="Prévia da foto do casal">` : '<span>Nenhuma foto escolhida</span>';
-  }
-
-  window.removeCouplePhoto = function() {
-    if (pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
-    pendingCouplePhotoPreviewUrl='';
-    pendingCouplePhotoFile=null;
-    window.data.couple.photo = '';
-    const input = document.getElementById('couplePhotoFile');
-    if (input) input.value = '';
-    renderCouplePhotoPreview();
-    renderHome();
-    toast('Foto removida. Clique em salvar para confirmar.');
-  };
 
   window.saveCouple = async function() {
-    try {
-      window.data.couple.title = document.getElementById('setTitle').value.trim() || 'Nosso Cantinho';
-      window.data.couple.subtitle = document.getElementById('setSubtitle').value.trim();
-      window.data.couple.names = document.getElementById('setNames').value.trim() || 'Nosso amor';
-      window.data.couple.date = document.getElementById('setDate').value;
-      window.data.couple.message = document.getElementById('setMessage').value.trim();
-      if (pendingCouplePhotoFile) {
-        toast('Enviando foto do casal 0%...');
-        const user=auth.currentUser;
-        if(!user) throw new Error('Faça login novamente para salvar a foto.');
-        const result=await uploadChatFile(pendingCouplePhotoFile,user,'image', pct => toast(`Enviando foto do casal ${pct}%...`));
-        window.data.couple.photo=result.url;
-        if(pendingCouplePhotoPreviewUrl) URL.revokeObjectURL(pendingCouplePhotoPreviewUrl);
-        pendingCouplePhotoPreviewUrl='';
-        pendingCouplePhotoFile=null;
-      }
-      await save('Identidade do casal', 'A identidade do casal foi atualizada 💑');
-      toast('Personalização salva!');
-    } catch(e) {
-      console.error('Erro ao salvar casal:',e);
-      toast('Não foi possível salvar a personalização: '+(e?.message||'erro desconhecido'));
-    }
-  };
-
-  window.addHistory = function() {
-    const title = document.getElementById('histTitle').value.trim(), date = document.getElementById('histDate').value, text = document.getElementById('histText').value.trim();
-    if(!title || !text) { toast('Preencha título e história.'); return; }
-    window.data.history.push({title, date, text}); clearIds('histTitle','histDate','histText'); save('Nova história', 'Um novo momento foi adicionado 💌'); toast('Momento adicionado!');
-  };
-
-  // Diagnóstico rápido do Storage: o usuário verá o erro real em vez de ficar preso em "Enviando...".
-  window.testFirebaseStorage = async function(){
-    try{
-      const user=auth.currentUser;
-      if(!user) throw new Error('Faça login novamente.');
-      const testBlob=new Blob(['nosso-cantinho-storage-test'],{type:'text/plain'});
-      const result=await uploadChatFile(testBlob,user,'media',pct=>toast(`Testando Storage ${pct}%...`));
-      toast('✅ Firebase Storage funcionando.');
-      console.log('Storage OK:',result.url);
-    }catch(e){
-      console.error('Teste Storage:',e);
-      toast(`❌ Storage: ${e?.code||'erro'} — ${e?.message||'falha'}`);
-    }
+    window.data.couple.title = document.getElementById('setTitle').value.trim() || 'Nosso Cantinho';
+    window.data.couple.subtitle = document.getElementById('setSubtitle').value.trim();
+    window.data.couple.names = document.getElementById('setNames').value.trim() || 'Nosso amor';
+    window.data.couple.date = document.getElementById('setDate').value;
+    window.data.couple.message = document.getElementById('setMessage').value.trim();
+    await save('Identidade', 'Identidade atualizada 💑');
+    toast('Salvo!');
   };
 
   window.addPhoto = async function() {
@@ -1380,188 +1242,68 @@ body.chat-open .bottom-nav{display:none}
     const url = document.getElementById('photoUrl').value.trim();
     const file = document.getElementById('photoFile').files[0];
     const user = auth.currentUser;
-    if(!user){ toast('Faça login novamente.'); return; }
-
+    if(!user) return;
     try {
       let src = url;
       if(file) {
-        if(!file.type.startsWith('image/')){ toast('Escolha uma imagem válida.'); return; }
-        toast('Preparando foto...');
         const blob = await compressImage(file, 1200, 0.72);
-        const base64 = await blobToDataUrl(blob);
-        if(String(base64).length > 700000) throw new Error('Essa foto ainda ficou grande demais. Escolha uma foto menor.');
-        src = base64;
+        src = await blobToDataUrl(blob);
       }
-      if(!src){ toast('Escolha uma imagem ou informe uma URL.'); return; }
-
-      toast('Salvando foto...');
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(docRef);
-        const server = snap.exists() ? snap.data() : {};
-        const photos = Array.isArray(server.photos) ? [...server.photos] : [];
-        photos.push({
-          id: `${Date.now()}_${user.uid}_${Math.random().toString(36).slice(2,7)}`,
-          caption, src,
-          createdAt: Date.now(),
-          createdBy: user.uid,
-          createdByName: user.displayName || 'Alguém'
-        });
-        tx.set(docRef, {
-          ...server,
-          photos,
-          _meta: {
-            actorUid:user.uid,
-            actorName:user.displayName||'Alguém',
-            changeType:'Nova foto',
-            changeBody:'Uma nova foto foi adicionada 📸',
-            changedKey:'photos',
-            changedAt:Date.now()
-          }
-        });
-      });
-
+      if(!src) { toast('Escolha uma imagem.'); return; }
+      window.data.photos.push({ id: `${Date.now()}`, caption, src, reaction: null });
       clearIds('photoCaption','photoUrl','photoFile');
-      toast('Foto salva em Nossas fotos! 📸');
-    } catch(err) {
-      console.error('Erro ao adicionar foto:',err);
-      toast('Não foi possível salvar: '+(err?.message||'erro desconhecido'));
-    }
+      await save('Nova foto', 'Foto adicionada 📸');
+      toast('Foto salva!');
+    } catch(err) { toast('Erro ao salvar foto.'); }
   };
-
-  window.addDate = function() { const title=document.getElementById('dateTitle').value.trim(),when=document.getElementById('dateWhen').value,type=document.getElementById('dateType').value.trim(),note=document.getElementById('dateNote').value.trim();if(!title||!when){toast('Preencha nome e data.');return}window.data.dates.push({title,when,type,note});clearIds('dateTitle','dateWhen','dateType','dateNote');save();toast('Data adicionada!'); };
-  window.addPlan = function() { const title=document.getElementById('planTitle').value.trim(),text=document.getElementById('planText').value.trim();if(!title){toast('Digite o nome do plano.');return}window.data.plans.push({title,text});clearIds('planTitle','planText');save();toast('Plano adicionado!'); };
-  window.addWish = function() { const text=document.getElementById('wishText').value.trim();if(!text){toast('Escreva o desejo.');return}window.data.wishes.push({text,person:document.getElementById('wishPerson').value.trim(),category:document.getElementById('wishCat').value,level:Number(document.getElementById('wishLevel').value),favorite:document.getElementById('wishFav').value==='true',done:false});clearIds('wishText','wishPerson');save();toast('Desejo adicionado!'); };
-  window.addToday = function() { const x=document.getElementById('todayText').value.trim();if(!x){toast('Escreva uma opção.');return}window.data.today.push(x);clearIds('todayText');save();toast('Opção adicionada!'); };
-  window.addChallenge = function() { const x=document.getElementById('challengeText').value.trim();if(!x){toast('Escreva um desafio.');return}window.data.challenges.push(x);clearIds('challengeText');save();toast('Desafio adicionado!'); };
-  window.addMood = function() { const emoji=document.getElementById('moodEmoji').value.trim(),label=document.getElementById('moodLabel').value.trim();if(!emoji||!label){toast('Preencha emoji e texto.');return}window.data.moods.push({emoji,label});clearIds('moodEmoji','moodLabel');save();toast('Opção de check-in adicionada!'); };
-  window.addLetter = function() { const title=document.getElementById('letterTitle').value.trim(),text=document.getElementById('letterText').value.trim();if(!title||!text){toast('Preencha título e texto.');return}window.data.letters.push({title,text});clearIds('letterTitle','letterText');save();toast('Cartinha adicionada!'); };
-  window.addMural = function() { const text=document.getElementById('muralText').value.trim();if(!text){toast('Escreva algo para o mural.');return}window.data.mural.push({text,date:new Date().toISOString().slice(0,10)});clearIds('muralText');save();toast('Mural atualizado!'); };
-  window.addQuiz = function() { const q=document.getElementById('quizQuestion').value.trim(),opts=['quizA','quizB','quizC','quizD'].map(id=>document.getElementById(id).value.trim());if(!q||opts.some(x=>!x)){toast('Preencha pergunta e as 4 respostas.');return}window.data.quiz.push({question:q,options:opts,correct:Number(document.getElementById('quizCorrect').value)});clearIds('quizQuestion','quizA','quizB','quizC','quizD');save();toast('Pergunta adicionada!'); };
 
   function clearIds(...ids) { ids.forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; }); }
 
-  function editorButtons(type, i) {
-    return `<div class="item-actions"><button class="btn secondary" onclick="editItem('${type}',${i})">✏️ Editar</button><button class="btn danger" onclick="deleteItem('${type}',${i})">🗑️ Apagar</button></div>`;
-  }
-
-  function renderEditors() {
-    document.getElementById('historyEditor').innerHTML = window.data.history.length ? window.data.history.map((x,i) => `<div class="item"><b>${esc(x.title)}</b><div class="item-meta">${fmtDate(x.date)}</div><div class="small">${esc(x.text)}</div>${editorButtons('history',i)}</div>`).join('') : '<div class="empty">Nenhum momento.</div>';
-    document.getElementById('photosEditor').innerHTML = window.data.photos.length ? window.data.photos.map((x,i) => `<div class="item"><b>📸 ${esc(x.caption || 'Sem legenda')}</b>${editorButtons('photos',i)}</div>`).join('') : '<div class="empty">Nenhuma foto.</div>';
-    document.getElementById('datesEditor').innerHTML = window.data.dates.length ? window.data.dates.map((x,i) => `<div class="item"><b>${esc(x.title)}</b><div class="item-meta">${fmtDate(x.when)} · ${esc(x.type || '')}</div>${editorButtons('dates',i)}</div>`).join('') : '<div class="empty">Nenhuma data.</div>';
-    document.getElementById('plansEditor').innerHTML = window.data.plans.length ? window.data.plans.map((x,i) => `<div class="item"><b>${esc(x.title)}</b>${editorButtons('plans',i)}</div>`).join('') : '<div class="empty">Nenhum plano.</div>';
-    document.getElementById('wishesEditor').innerHTML = window.data.wishes.length ? window.data.wishes.map((x,i) => `<div class="item"><b>${esc(x.text)}</b><div class="item-meta">${esc(x.person || '')} · ${esc(x.category || '')} · ${'⭐'.repeat(x.level || 1)} ${x.favorite ? '❤️' : ''}</div>${editorButtons('wishes',i)}</div>`).join('') : '<div class="empty">Nenhum desejo.</div>';
-    document.getElementById('todayEditor').innerHTML = window.data.today.length ? window.data.today.map((x,i) => `<div class="item"><b>🎲 ${esc(x)}</b><div class="item-actions"><button class="btn danger" onclick="deleteItem('today',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhuma opção.</div>';
-    document.getElementById('challengeEditor').innerHTML = window.data.challenges.length ? window.data.challenges.map((x,i) => `<div class="item"><b>🥰 ${esc(x)}</b><div class="item-actions"><button class="btn danger" onclick="deleteItem('challenges',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhum desafio.</div>';
-    document.getElementById('moodsEditor').innerHTML = window.data.moods.length ? window.data.moods.map((x,i) => `<div class="item"><b>${esc(x.emoji)} ${esc(x.label)}</b><div class="item-actions"><button class="btn secondary" onclick="editMood(${i})">✏️ Editar</button><button class="btn danger" onclick="deleteItem('moods',${i})">🗑️ Apagar</button></div></div>`).join('') : '<div class="empty">Nenhuma opção.</div>';
-    document.getElementById('lettersEditor').innerHTML = window.data.letters.length ? window.data.letters.map((x,i) => `<div class="item"><b>💌 ${esc(x.title)}</b><div class="small">${esc(x.text)}</div>${editorButtons('letters',i)}</div>`).join('') : '<div class="empty">Nenhuma cartinha.</div>';
-    document.getElementById('muralEditor').innerHTML = window.data.mural.length ? window.data.mural.map((x,i) => `<div class="item"><b>❤️ ${esc(x.text)}</b>${editorButtons('mural',i)}</div>`).join('') : '<div class="empty">Nenhum item.</div>';
-    document.getElementById('quizEditor').innerHTML = window.data.quiz.length ? window.data.quiz.map((x,i) => `<div class="item"><b>🧩 ${esc(x.question)}</b><div class="item-meta">Resposta: ${String.fromCharCode(65+x.correct)}</div>${editorButtons('quiz',i)}</div>`).join('') : '<div class="empty">Nenhuma pergunta.</div>';
-  }
-
-  window.editMood = function(i) {
-    const m = window.data.moods[i], emoji = prompt('Emoji:', m.emoji), label = prompt('Texto:', m.label);
-    if(emoji !== null && label !== null) { window.data.moods[i] = { emoji: emoji.trim() || m.emoji, label: label.trim() || m.label }; save(); toast('Check-in atualizado!'); }
-  };
-
   window.editItem = function(type, i) {
-    const x = window.data[type][i];
-    if(type === 'today' || type === 'challenges') { const n = prompt('Edite:', x); if(n !== null && n.trim()) { window.data[type][i] = n.trim(); save(); } return; }
-    if(type === 'mural') { const n = prompt('Edite:', x.text); if(n !== null && n.trim()) { x.text = n.trim(); save(); } return; }
-    if(type === 'history') { const title = prompt('Título:', x.title), text = prompt('História:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
-    if(type === 'plans') { const title = prompt('Plano:', x.title), text = prompt('Detalhes:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
-    if(type === 'letters') { const title = prompt('Título:', x.title), text = prompt('Texto:', x.text); if(title !== null && text !== null) { x.title = title; x.text = text; save(); } return; }
-    if(type === 'dates') { const title = prompt('Nome:', x.title), when = prompt('Data AAAA-MM-DD:', x.when), note = prompt('Observação:', x.note || ''); if(title !== null && when !== null) { x.title = title; x.when = when; x.note = note ?? x.note; save(); } return; }
-    if(type === 'wishes') { const text = prompt('Desejo:', x.text); if(text !== null && text.trim()) { x.text = text.trim(); save(); } return; }
-    if(type === 'quiz') { const q = prompt('Pergunta:', x.question); if(q !== null && q.trim()) { x.question = q.trim(); save(); } return; }
-    if(type === 'photos') { const c = prompt('Legenda:', x.caption || ''); if(c !== null) { x.caption = c; save(); } return; }
-  };
-
-  window.deleteItem = function(type, i) {
-    if(!confirm('Apagar este item?')) return;
-    window.data[type].splice(i, 1);
-    save();
-    toast('Item apagado.');
-  };
-
-  window.resetApp = function() {
-    if(confirm('Tem certeza? Todo o conteúdo personalizado será redefinido para o padrão.')) {
-      window.data = JSON.parse(JSON.stringify(defaults));
-      save();
+    if(type === 'photos') {
+      const c = prompt('Nova legenda:', window.data.photos[i].caption || '');
+      if(c !== null) { window.data.photos[i].caption = c; save(); }
     }
   };
 
   window.openPhotoLightbox = function(index) {
-    if(!window.data.photos[index] || !window.data.photos[index].src) return;
+    if(!window.data.photos[index]?.src) return;
     window.currentPhotoIndex = index;
-    const box = document.getElementById('photoLightbox');
     updatePhotoLightbox();
-    box.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    document.getElementById('photoLightbox').classList.add('active');
   };
 
   function updatePhotoLightbox() {
     const x = window.data.photos[window.currentPhotoIndex];
-    if(!x || !x.src) return;
     document.getElementById('lightboxImage').src = x.src;
-    document.getElementById('lightboxImage').alt = x.caption || 'Foto';
     document.getElementById('lightboxCaption').textContent = x.caption || '';
     document.getElementById('lightboxCounter').textContent = `${window.currentPhotoIndex + 1} / ${window.data.photos.length}`;
   }
 
-  window.changePhoto = function(direction) {
+  window.changePhoto = function(dir) {
     const total = window.data.photos.length;
     if(!total) return;
-    let next = window.currentPhotoIndex;
-    for(let i = 0; i < total; i++) {
-      next = (next + direction + total) % total;
-      if(window.data.photos[next] && window.data.photos[next].src) break;
-    }
-    if(window.data.photos[next] && window.data.photos[next].src) {
-      window.currentPhotoIndex = next;
-      updatePhotoLightbox();
-    }
+    window.currentPhotoIndex = (window.currentPhotoIndex + dir + total) % total;
+    updatePhotoLightbox();
   };
 
-  window.closePhotoLightbox = function(event) {
-    if(event && event.target && event.target.id !== 'photoLightbox') return;
+  window.closePhotoLightbox = function(e) {
+    if(e && e.target && e.target.id !== 'photoLightbox') return;
     document.getElementById('photoLightbox').classList.remove('active');
-    document.body.style.overflow = '';
-    window.currentPhotoIndex = -1;
   };
-
-  document.addEventListener('keydown', e => {
-    const box = document.getElementById('photoLightbox');
-    if(!box.classList.contains('active')) return;
-    if(e.key === 'Escape') closePhotoLightbox();
-    if(e.key === 'ArrowLeft') changePhoto(-1);
-    if(e.key === 'ArrowRight') changePhoto(1);
-  });
 
   function fillSettings() {
     document.getElementById('setTitle').value = window.data.couple.title;
     document.getElementById('setSubtitle').value = window.data.couple.subtitle;
     document.getElementById('setNames').value = window.data.couple.names;
     document.getElementById('setDate').value = window.data.couple.date;
-    const input = document.getElementById('couplePhotoFile');
-    if (input) input.value = '';
-    renderCouplePhotoPreview();
     document.getElementById('setMessage').value = window.data.couple.message;
   }
 
   function renderAll() {
-    renderHome();
-    renderHistory();
-    renderPhotos();
-    renderDates();
-    renderPlans();
-    renderDesires();
-    renderLetters();
-    renderMural();
-    renderQuiz();
-    renderTodayQuickEdit();
-    renderChallengeQuickEdit();
+    renderHome(); renderHistory(); renderPhotos(); renderDates(); renderPlans();
+    renderDesires(); renderLetters(); renderMural(); renderQuiz();
     fillSettings();
-    renderEditors();
     if(document.getElementById('checkin').classList.contains('active')) renderCheckin();
   }
 </script>
